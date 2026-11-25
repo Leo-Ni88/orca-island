@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Build the helper with swiftc
+        run: |
+          xcrun swiftc --version
+          mkdir -p helper/bin
+          xcrun swiftc -O -o helper/bin/island-helper helper/island.swift
+
+      - name: Tests (no Orca app needed)
+        # Tests that mount the worker need Orca's test host and are skipped here;
+        # run `orca plugin test .` locally for the full suite.
+        run: sh tools/ci/run-tests.sh
+
+      - name: Manifest checks
+        # The Orca CLI ships inside Orca.app and cannot be installed headless, so CI
+        # cannot run `orca plugin validate`. This checks the rules we can check without it.
+        run: node tools/ci/check-manifest.mjs

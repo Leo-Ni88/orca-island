@@ -1,0 +1,557 @@
+{
+ "items": {
+  "botId": "11111111-0000-4000-8000-000000000001",
+  "botName": "alpha",
+  "items": [
+   {
+    "uid": "item-1",
+    "number": 11,
+    "owner": {
+     "botId": "11111111-0000-4000-8000-000000000001",
+     "name": "alpha"
+    },
+    "title": "去掉前缀",
+    "description": null,
+    "doneMeans": "决定做或不做",
+    "status": "needs_you",
+    "chat": {
+     "id": "aaaaaaaa-0000-4000-8000-000000000001",
+     "kind": "home",
+     "title": "Home：daily"
+    },
+    "madeBy": null,
+    "question": {
+     "eventId": "e1",
+     "text": "推荐方案 B。\n\n1. 兼容期多久？",
+     "gist": "推荐方案 B。",
+     "decisions": [
+      {
+       "question": "兼容期多久？",
+       "replies": [
+        {
+         "label": "4 周",
+         "recommended": true
+        },
+        {
+         "label": "8 周",
+         "recommended": false
+        }
+       ]
+      }
+     ]
+    },
+    "closeNote": null,
+    "wait": null,
+    "links": [],
+    "version": 10,
+    "lastEventId": "e356",
+    "othersLastEventId": "e356",
+    "snoozedUntil": null,
+    "lastActivityAt": 1795530318897,
+    "createdAt": 1795403871467,
+    "updatedAt": 1795530318897,
+    "closedAt": null
+   },
+   {
+    "uid": "item-2",
+    "number": 24,
+    "owner": {
+     "botId": "11111111-0000-4000-8000-000000000001",
+     "name": "alpha"
+    },
+    "title": "冲突待处理",
+    "description": "需要看一下",
+    "doneMeans": "决定做或不做",
+    "status": "needs_you",
+    "chat": {
+     "id": "aaaaaaaa-0000-4000-8000-000000000001",
+     "kind": "home",
+     "title": "Home：daily"
+    },
+    "madeBy": null,
+    "question": null,
+    "closeNote": null,
+    "wait": null,
+    "links": [],
+    "version": 10,
+    "lastEventId": "e356",
+    "othersLastEventId": "e356",
+    "snoozedUntil": null,
+    "lastActivityAt": 1795530318897,
+    "createdAt": 1795403871467,
+    "updatedAt": 1795530318897,
+    "closedAt": null
+   }
+  ],
+  "counts": {
+   "needs_you": 2
+  }
+ },
+ "bots": {
+  "bots": [
+   {
+    "id": "11111111-0000-4000-8000-000000000001",
+    "name": "alpha",
+    "agent": "claude",
+    "paused": false,
+    "linked": [],
+    "specialty": "x",
+    "chats": {
+     "count": 1,
+     "home": true
+    }
+   },
+   {
+    "id": "11111111-0000-4000-8000-000000000002",
+    "name": "beta",
+    "agent": "claude",
+    "paused": false,
+    "linked": [],
+    "specialty": "y",
+    "chats": {
+     "count": 1,
+     "home": true
+    }
+   }
+  ],
+  "unreachable": []
+ },
+ "chats": {
+  "alpha": [
+   {
+    "id": "aaaaaaaa-0000-4000-8000-000000000001",
+    "title": "Home：daily",
+    "home": true
+   }
+  ],
+  "beta": [
+   {
+    "id": "aaaaaaaa-0000-4000-8000-000000000002",
+    "title": "Home",
+    "home": true
+   }
+  ]
+ },
+ "plugins": {
+  "plugins": [
+   {
+    "pluginKey": "acme.demo",
+    "consentFingerprint": "sha256-x",
+    "name": "Demo",
+    "version": "1.0.0",
+    "publisher": "stablyai",
+    "description": "GitHub's own VS Code themes: Light Default, Dark Default, Dark Dimmed and the high-contrast variants.",
+    "execution": "data",
+    "types": [
+     "app-theme",
+     "terminal-theme"
+    ],
+    "license": "MIT",
+    "repository": "https://github.com/stablyai/orca-plugins/tree/main/plugins/github-vscode-theme",
+    "status": "idle",
+    "needsReconsent": true,
+    "isDev": false,
+    "official": true,
+    "bundled": true,
+    "capabilities": [],
+    "panels": [],
+    "customEditors": [],
+    "newFiles": [],
+    "fonts": [],
+    "commands": [],
+    "statusBarItems": [],
+    "hooks": [],
+    "hasWorker": false,
+    "vmRecipes": [],
+    "restarts": 0,
+    "source": {
+     "kind": "bundled",
+     "reference": "bundled:stablyai.orca-github-vscode-theme",
+     "resolvedCommit": null,
+     "contentHash": "7e17af8557dd0163ee0bc74aca3a6eb227f00bdd4b2ca04a68d78d891a24afb3"
+    }
+   },
+   {
+    "pluginKey": "acme.ok",
+    "consentFingerprint": "sha256-T1PNoYwrqgwDVLtfmj7L5e0Sq02OEbqHPC8RFhICuUU=",
+    "name": "Ok",
+    "version": "1.0.0",
+    "publisher": "stablyai",
+    "description": "GitHub's own VS Code themes: Light Default, Dark Default, Dark Dimmed and the high-contrast variants.",
+    "execution": "data",
+    "types": [
+     "app-theme",
+     "terminal-theme"
+    ],
+    "license": "MIT",
+    "repository": "https://github.com/stablyai/orca-plugins/tree/main/plugins/github-vscode-theme",
+    "status": "idle",
+    "needsReconsent": false,
+    "isDev": false,
+    "official": true,
+    "bundled": true,
+    "capabilities": [],
+    "panels": [],
+    "customEditors": [],
+    "newFiles": [],
+    "fonts": [],
+    "commands": [],
+    "statusBarItems": [],
+    "hooks": [],
+    "hasWorker": false,
+    "vmRecipes": [],
+    "restarts": 0,
+    "source": {
+     "kind": "bundled",
+     "reference": "bundled:stablyai.orca-github-vscode-theme",
+     "resolvedCommit": null,
+     "contentHash": "7e17af8557dd0163ee0bc74aca3a6eb227f00bdd4b2ca04a68d78d891a24afb3"
+    }
+   }
+  ]
+ },
+ "runs": {
+  "runs": [
+   {
+    "id": "run-ok",
+    "automationId": "99999999-0000-4000-8000-000000000000",
+    "runNumber": 2,
+    "runContext": null,
+    "sourceContext": null,
+    "title": "汇总 run 2",
+    "scheduledFor": 1795572000000,
+    "status": "completed",
+    "trigger": "scheduled",
+    "workspaceId": "folder:home-1",
+    "workspaceDisplayName": "alpha",
+    "sessionKind": "chat",
+    "chatSessionId": null,
+    "terminalSessionId": null,
+    "terminalPaneKey": null,
+    "terminalPtyId": null,
+    "outputSnapshot": null,
+    "precheckResult": null,
+    "usage": null,
+    "error": null,
+    "startedAt": 1795572002786,
+    "dispatchedAt": 1795572002792,
+    "createdAt": 1795572002764,
+    "launchedAt": 1795572002792
+   },
+   {
+    "id": "run-skip",
+    "automationId": "99999999-0000-4000-8000-000000000000",
+    "runNumber": 2,
+    "runContext": null,
+    "sourceContext": null,
+    "title": "Nightly run 58",
+    "scheduledFor": 1795572000000,
+    "status": "skipped_precheck",
+    "trigger": "scheduled",
+    "workspaceId": "folder:home-1",
+    "workspaceDisplayName": "alpha",
+    "sessionKind": "chat",
+    "chatSessionId": null,
+    "terminalSessionId": null,
+    "terminalPaneKey": null,
+    "terminalPtyId": null,
+    "outputSnapshot": null,
+    "precheckResult": null,
+    "usage": null,
+    "error": "Precheck exited with code 1.",
+    "startedAt": 1795572002786,
+    "dispatchedAt": 1795572002792,
+    "createdAt": 1795572002764,
+    "launchedAt": 1795572002792
+   },
+   {
+    "id": "run-bad",
+    "automationId": "99999999-0000-4000-8000-000000000000",
+    "runNumber": 2,
+    "runContext": null,
+    "sourceContext": null,
+    "title": "Nightly run 59",
+    "scheduledFor": 1795572000000,
+    "status": "dispatch_failed",
+    "trigger": "scheduled",
+    "workspaceId": "folder:home-1",
+    "workspaceDisplayName": "alpha",
+    "sessionKind": "chat",
+    "chatSessionId": null,
+    "terminalSessionId": null,
+    "terminalPaneKey": null,
+    "terminalPtyId": null,
+    "outputSnapshot": null,
+    "precheckResult": null,
+    "usage": null,
+    "error": "Could not start the agent.",
+    "startedAt": 1795572002786,
+    "dispatchedAt": 1795572002792,
+    "createdAt": 1795572002764,
+    "launchedAt": 1795572002792
+   }
+  ]
+ },
+ "runList": {
+  "runs": [
+   {
+    "id": "run_1",
+    "objective": "演示"
+   }
+  ]
+ },
+ "gates": {
+  "gates": [
+   {
+    "id": "gate_1",
+    "taskId": "t1",
+    "status": "pending",
+    "question": "合并到哪个分支？",
+    "options": "[\"main\",\"dev\"]"
+   }
+  ],
+  "runId": "run_1"
+ },
+ "ps": {
+  "worktrees": [
+   {
+    "workspaceKind": "folder-workspace",
+    "worktreeId": "folder:home-1",
+    "repo": "Bots",
+    "path": "/u/.orca/bots/alpha",
+    "branch": "",
+    "bot": "alpha",
+    "botHome": true,
+    "parentWorktreeId": null,
+    "displayName": "alpha",
+    "hostId": "local",
+    "agents": [
+     {
+      "paneKey": "structured-agent-session-aaaaaaaa-0000-4000-8000-000000000001:tab-1",
+      "address": "orca_session_id:aaaaaaaa-0000-4000-8000-000000000001",
+      "orcaSessionId": "aaaaaaaa-0000-4000-8000-000000000001",
+      "parentPaneKey": null,
+      "state": "working",
+      "agentType": "claude",
+      "prompt": "",
+      "taskTitle": null,
+      "displayName": null,
+      "conversationName": "alpha",
+      "lastAssistantMessage": "**结论**：可以合并。\n细节…",
+      "toolName": null,
+      "toolInput": null,
+      "interrupted": false,
+      "mainAgent": {
+       "state": "working",
+       "stateStartedAt": 1000
+      },
+      "stateStartedAt": 1795572515193,
+      "updatedAt": 1795572515193,
+      "children": [],
+      "structuredHostOwned": true,
+      "subagentObservation": "live",
+      "activity": null
+     }
+    ]
+   },
+   {
+    "workspaceKind": "folder-workspace",
+    "worktreeId": "folder:home-2",
+    "repo": "Bots",
+    "path": "/u/.orca/bots/beta",
+    "branch": "",
+    "bot": "beta",
+    "botHome": true,
+    "parentWorktreeId": null,
+    "displayName": "beta",
+    "hostId": "local",
+    "agents": [
+     {
+      "paneKey": "structured-agent-session-aaaaaaaa-0000-4000-8000-000000000002:tab-1",
+      "address": "orca_session_id:aaaaaaaa-0000-4000-8000-000000000002",
+      "orcaSessionId": "aaaaaaaa-0000-4000-8000-000000000002",
+      "parentPaneKey": null,
+      "state": "done",
+      "agentType": "claude",
+      "prompt": "",
+      "taskTitle": null,
+      "displayName": null,
+      "conversationName": "beta",
+      "lastAssistantMessage": "",
+      "toolName": null,
+      "toolInput": null,
+      "interrupted": false,
+      "mainAgent": {
+       "state": "done",
+       "outcome": "success",
+       "stateStartedAt": 1795572515193
+      },
+      "stateStartedAt": 1795572515193,
+      "updatedAt": 1795572515193,
+      "children": [],
+      "structuredHostOwned": true,
+      "subagentObservation": "live",
+      "activity": null
+     }
+    ]
+   },
+   {
+    "workspaceKind": "git",
+    "worktreeId": "repo-1::/u/ws/feature",
+    "repo": "demo-repo",
+    "path": "/u/ws/feature",
+    "branch": "refs/heads/me/feature",
+    "bot": null,
+    "parentWorktreeId": null,
+    "displayName": "feature",
+    "hostId": "local",
+    "agents": [
+     {
+      "paneKey": "structured-agent-session-aaaaaaaa-0000-4000-8000-000000000003:tab-1",
+      "address": "orca_session_id:aaaaaaaa-0000-4000-8000-000000000003",
+      "orcaSessionId": "aaaaaaaa-0000-4000-8000-000000000003",
+      "parentPaneKey": "structured-agent-session-aaaaaaaa-0000-4000-8000-000000000001:tab-1",
+      "state": "working",
+      "agentType": "claude",
+      "prompt": "",
+      "taskTitle": "Release notes",
+      "displayName": "Release notes",
+      "conversationName": "x",
+      "lastAssistantMessage": "",
+      "toolName": "Bash",
+      "toolInput": null,
+      "interrupted": false,
+      "mainAgent": {
+       "state": "working",
+       "stateStartedAt": 2000
+      },
+      "stateStartedAt": 1795572274593,
+      "updatedAt": 1795572573512,
+      "children": [],
+      "structuredHostOwned": true,
+      "subagentObservation": "live",
+      "activity": null
+     }
+    ]
+   },
+   {
+    "workspaceKind": "git",
+    "worktreeId": "repo-1::/u/src/demo",
+    "repo": "demo-repo",
+    "path": "/u/src/demo",
+    "branch": "refs/heads/main",
+    "parentWorktreeId": null,
+    "displayName": "main",
+    "hostId": "local",
+    "bot": null,
+    "agents": [
+     {
+      "paneKey": "tab-9:pane-9",
+      "orcaSessionId": null,
+      "parentPaneKey": null,
+      "state": "working",
+      "agentType": "claude",
+      "prompt": "帮我修一下登录页面的样式问题，顺便看看为什么按钮不能点击以及移动端的布局",
+      "taskTitle": null,
+      "displayName": null,
+      "conversationName": null,
+      "lastAssistantMessage": null,
+      "mainAgent": {
+       "state": "working",
+       "stateStartedAt": 3000
+      },
+      "activity": null
+     },
+     {
+      "paneKey": "tab-8:pane-8",
+      "orcaSessionId": null,
+      "parentPaneKey": null,
+      "state": "working",
+      "agentType": "codex",
+      "prompt": "",
+      "taskTitle": null,
+      "displayName": null,
+      "conversationName": null,
+      "lastAssistantMessage": null,
+      "mainAgent": {
+       "state": "working",
+       "stateStartedAt": 3000
+      },
+      "activity": null
+     }
+    ]
+   }
+  ]
+ },
+ "itemsMulti": {
+  "botId": "11111111-0000-4000-8000-000000000001",
+  "botName": "alpha",
+  "items": [
+   {
+    "uid": "item-multi",
+    "number": 45,
+    "owner": {
+     "botId": "11111111-0000-4000-8000-000000000001",
+     "name": "alpha"
+    },
+    "title": "Onboarding：验收",
+    "description": null,
+    "doneMeans": "验收",
+    "status": "needs_you",
+    "chat": {
+     "id": "aaaaaaaa-0000-4000-8000-000000000001",
+     "kind": "home",
+     "title": "Home：daily"
+    },
+    "madeBy": null,
+    "question": {
+     "eventId": "e2",
+     "text": "先确认两件事。\n\n1. 回到电脑前（已解锁）时告诉我，我好挂新问题验第 1 步？\n   - 我回来了\n\n2. 第 3 步：“输入其他想法”里能打中文吗？打完后焦点有没有还回原来的应用？\n   - 能打，焦点也还回去了 (recommended)\n   - 能打，但焦点没还回去\n   - 打不了字",
+     "gist": "先确认两件事。",
+     "decisions": [
+      {
+       "question": "回到电脑前（已解锁）时告诉我，我好挂新问题验第 1 步？",
+       "replies": [
+        {
+         "label": "我回来了",
+         "recommended": false
+        }
+       ]
+      },
+      {
+       "question": "第 3 步：“输入其他想法”里能打中文吗？打完后焦点有没有还回原来的应用？",
+       "replies": [
+        {
+         "label": "能打，焦点也还回去了",
+         "recommended": true
+        },
+        {
+         "label": "能打，但焦点没还回去",
+         "recommended": false
+        },
+        {
+         "label": "打不了字",
+         "recommended": false
+        }
+       ]
+      }
+     ]
+    },
+    "closeNote": null,
+    "wait": null,
+    "links": [],
+    "version": 6,
+    "lastEventId": "e1",
+    "othersLastEventId": "e1",
+    "snoozedUntil": null,
+    "lastActivityAt": 1795519011345,
+    "createdAt": 1795518232385,
+    "updatedAt": 1795519011345,
+    "closedAt": null
+   }
+  ],
+  "counts": {
+   "needs_you": 1
+  }
+ }
+}

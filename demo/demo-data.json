@@ -1,0 +1,279 @@
+{
+ "_comment": "Invented demo data. Every image and GIF in media/ is rendered from this file only.",
+ "items": [
+  {
+   "id": "t-deploy",
+   "title": "Deploy to staging?",
+   "group": "web-app",
+   "sub": "claude · web-app / feat/login",
+   "state": "needs_you",
+   "priority": 0,
+   "ageSec": 42,
+   "workSec": 380,
+   "detail": "Run npm test?",
+   "line": "Claude wants to run: npm test",
+   "isNew": true,
+   "jump": "跳转到会话",
+   "source": "terminal"
+  },
+  {
+   "id": "b-release",
+   "title": "#12 Release v2.3",
+   "group": "atlas",
+   "sub": "待你决定",
+   "state": "needs_you",
+   "priority": 0,
+   "ageSec": 150,
+   "workSec": 0,
+   "detail": "Which build goes to staging first?",
+   "line": "Which build goes to staging first?",
+   "options": [
+    "Release candidate",
+    "Nightly",
+    "Wait"
+   ],
+   "jump": "去 Orca 回答",
+   "source": "bot"
+  },
+  {
+   "id": "c-atlas",
+   "title": "atlas · Home",
+   "group": "atlas",
+   "sub": "claude",
+   "state": "done",
+   "priority": 2,
+   "ageSec": 60,
+   "workSec": 95,
+   "detail": "The cache fix is merged.",
+   "line": "回复了 · The cache fix is merged.",
+   "reply": true,
+   "unread": true,
+   "jump": "打开 atlas",
+   "source": "bot"
+  },
+  {
+   "id": "t-api",
+   "title": "Fix cache headers",
+   "group": "api-server",
+   "sub": "codex · api-server / fix/cache",
+   "state": "done",
+   "priority": 2,
+   "ageSec": 20,
+   "workSec": 260,
+   "line": "完成 · 用时 4 分钟",
+   "unread": true,
+   "jump": "跳转到会话",
+   "source": "terminal"
+  },
+  {
+   "id": "t-mobile",
+   "title": "Onboarding screens",
+   "group": "mobile-app",
+   "sub": "claude · mobile-app / feat/onboarding · 由 nova 派出",
+   "state": "working",
+   "priority": 4,
+   "ageSec": 0,
+   "workSec": 540,
+   "line": "运行中",
+   "jump": "跳转到会话",
+   "source": "terminal"
+  },
+  {
+   "id": "a-nightly",
+   "title": "自动化失败：Nightly checks",
+   "group": "nova",
+   "sub": "自动化",
+   "state": "failed",
+   "priority": 1,
+   "ageSec": 300,
+   "workSec": 0,
+   "detail": "Could not start the agent.",
+   "line": "失败 · Could not start the agent.",
+   "unread": true,
+   "jump": "打开 Orca",
+   "source": "orca"
+  }
+ ],
+ "groups": {
+  "project": [
+   {
+    "key": "project:web-app",
+    "name": "web-app",
+    "sections": [
+     {
+      "name": "feat/login",
+      "ids": [
+       "t-deploy"
+      ]
+     }
+    ]
+   },
+   {
+    "key": "project:Bots",
+    "name": "Bots",
+    "sections": [
+     {
+      "name": "atlas",
+      "ids": [
+       "b-release",
+       "c-atlas"
+      ]
+     },
+     {
+      "name": "nova",
+      "ids": [
+       "a-nightly"
+      ]
+     }
+    ]
+   },
+   {
+    "key": "project:api-server",
+    "name": "api-server",
+    "sections": [
+     {
+      "name": "fix/cache",
+      "ids": [
+       "t-api"
+      ]
+     }
+    ]
+   },
+   {
+    "key": "project:mobile-app",
+    "name": "mobile-app",
+    "sections": [
+     {
+      "name": "feat/onboarding",
+      "ids": [
+       "t-mobile"
+      ]
+     }
+    ]
+   }
+  ],
+  "bot": [
+   {
+    "key": "bot:atlas",
+    "name": "atlas",
+    "sections": [
+     {
+      "ids": [
+       "b-release",
+       "c-atlas"
+      ]
+     }
+    ]
+   },
+   {
+    "key": "bot:nova",
+    "name": "nova",
+    "sections": [
+     {
+      "ids": [
+       "a-nightly",
+       "t-mobile"
+      ]
+     }
+    ]
+   },
+   {
+    "key": "bot:我的会话",
+    "name": "我的会话",
+    "sections": [
+     {
+      "ids": [
+       "t-deploy",
+       "t-api"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "details": {
+  "t-deploy": {
+   "title": "Deploy to staging?",
+   "source": "web-app · claude · web-app / feat/login",
+   "question": "Bash command\nnpm test\nDo you want to proceed?",
+   "options": [
+    {
+     "n": 1,
+     "label": "Yes"
+    },
+    {
+     "n": 2,
+     "label": "Yes, and don't ask again for npm test"
+    },
+    {
+     "n": 3,
+     "label": "No"
+    }
+   ],
+   "textOption": 3,
+   "answerable": true,
+   "signature": "demo",
+   "primary": "跳转到会话"
+  },
+  "b-release": {
+   "title": "#12 Release v2.3",
+   "source": "atlas · 待你决定",
+   "question": "Two quick decisions before the release.",
+   "asks": [
+    {
+     "question": "Which build goes to staging first?",
+     "options": [
+      {
+       "label": "Release candidate",
+       "recommended": true
+      },
+      {
+       "label": "Nightly",
+       "recommended": false
+      }
+     ]
+    },
+    {
+     "question": "Notify the beta testers?",
+     "options": [
+      {
+       "label": "Yes, today",
+       "recommended": false
+      },
+      {
+       "label": "After staging passes",
+       "recommended": true
+      },
+      {
+       "label": "No",
+       "recommended": false
+      }
+     ]
+    }
+   ],
+   "inputKind": "orca",
+   "primary": "去 Orca 回答"
+  }
+ },
+ "finishing": [
+  "t-api",
+  "c-atlas",
+  "a-nightly"
+ ],
+ "awaySummary": {
+  "title": "你离开的 25 分钟里",
+  "lines": [
+   "2 个问题在等你回答：「Deploy to staging?」「#12 Release v2.3」",
+   "1 个任务失败：Nightly checks",
+   "2 个任务完成"
+  ],
+  "badge": "5 条新消息",
+  "ids": [
+   "t-deploy",
+   "b-release",
+   "a-nightly",
+   "c-atlas",
+   "t-api"
+  ]
+ }
+}

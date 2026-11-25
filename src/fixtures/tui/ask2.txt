@@ -1,0 +1,45 @@
+
+
+✻ Baked for 7s · done 11:06 AM
+
+❯ Use the AskUserQuestion tool to ask me one question: Which color? with options Red, Green, Blue. Do nothing else.
+
+⏺ User answered Claude's questions:
+  ⎿  · Which color? → Green
+
+⏺ You picked Green.
+
+✻ Cogitated for 31s · done 11:06 AM
+
+❯ Use the AskUserQuestion tool with two questions: Which size (Small, Large)? and Which fruit (Apple, Pear),
+  multiSelect true for the second.
+
+⏺ User declined to answer questions
+  ⎿  · Which size? (Small / Large)
+     · Which fruit? (Apple / Pear)
+
+✻ Crunched for 5s · done 11:07 AM
+
+❯ Use the Write tool to create notes.txt containing: hello
+
+⏺ Write(notes.txt)
+  ⎿  User rejected write to notes.txt
+      1 hello
+
+✻ Worked for 7s · done 11:07 AM
+
+❯ Use the AskUserQuestion tool to ask me one question: Which shape? with options Round, Square. Do nothing else.
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ ☐ Shape
+
+Which shape?
+
+❯ 1. Round
+     Round
+  2. Square
+     Square
+  3. Type something.
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  4. Chat about this
+
+Enter to select · ↑/↓ to navigate · Esc to cancel

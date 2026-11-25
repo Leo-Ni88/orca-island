@@ -1,0 +1,31 @@
+
+ ▐▛███▛█   Claude Code v2.1.322
+▝▜██████▀  Opus 5.5
+ ▝▝   ▝▝   ~/proj
+
+
+❯ x
+
+⏺ The message just says "x", so I'm not sure what you'd like. What should I help with?
+
+✻ Churned for 3s · done 11:04 AM
+
+❯ Run exactly this with the Bash tool: touch /tmp/demo/one.txt
+
+  Creating empty file one.txt
+  ⎿  $ touch /tmp/demo/one.txt
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ Bash command
+ Tip: auto mode handles these prompts for you — choose "switch to auto mode" below
+ Create empty file one.txt
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ touch /tmp/demo/one.txt
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ Do you want to proceed?
+   1. Yes
+   2. Yes, and always allow access to /tmp/demo from this project
+   3. Yes, and switch to auto mode · auto mode handles these prompts for you
+ ❯ 4. No, and tell Claude what to do differently
+
+ Esc to cancel

@@ -1,0 +1,36 @@
+name: Bug report
+description: Something in Orca Island does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please leave out real project names, paths, terminal output and anything private; generic examples are enough.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start a Claude Code session in an Orca terminal
+        2. Ask it to run `touch demo.txt`
+        3. ...
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Orca version, Orca Island version, macOS version, Mac model (notch or not)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Plugin log (optional)
+      description: "`orca plugin logs leo-ni88.agent-island`; please remove anything private first."
+      render: text
