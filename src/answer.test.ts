@@ -1,7 +1,7 @@
 import { assert, test, describe } from 'orca/testing'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { cleanFreeText, parsePrompt } from './tui'
+import { cleanFreeText, parsePrompt, redactSecrets } from './tui'
 import { Answerer, type TerminalIo } from './answer'
 
 const fx = (n: string): string[] => readFileSync(resolve(import.meta.dirname, `fixtures/tui/${n}.txt`), 'utf8').split('\n')
@@ -83,6 +83,26 @@ describe('parsing recorded Claude Code 2.1.322 screens', () => {
     for (const n of ['trust', 'ask2-after']) assert.equal(parsePrompt(fx(n)), null, n)
   })
   test('free text is one line without control codes', () => assert.equal(cleanFreeText(' a\n\u001b[B b\t\u0003c '), 'a [B b c'))
+  test('redactSecrets masks keys, tokens and passwords, and leaves plain text alone', () => {
+    assert.equal(redactSecrets('api_key=FAKE-EXAMPLE-KEY-0000'), 'api_key=[redacted]')
+    assert.equal(redactSecrets('Authorization: Bearer FAKE-TOKEN-0000000000000000'), 'Authorization: Bearer [redacted]')
+    assert.equal(redactSecrets('password: fake-password-1234'), 'password: [redacted]')
+    assert.equal(redactSecrets('key sk-EXAMPLE00000000000000000000 here'), 'key [redacted] here')
+    assert.equal(redactSecrets('run the tests, no secrets here'), 'run the tests, no secrets here')
+  })
+  test('a prompt excerpt carrying secrets is redacted before it reaches the helper', () => {
+    const lines = fx('bash').map((l) =>
+      l.replace(
+        'touch /tmp/demo/one.txt',
+        'curl https://example.invalid?api_key=FAKE-EXAMPLE-KEY-0000 -H "Authorization: Bearer FAKE-TOKEN-0000000000000000"'
+      )
+    )
+    const p = parsePrompt(lines)!
+    assert.equal(p.ask, 'curl https://example.invalid?api_key=[redacted] -H "Authorization: Bearer [redacted]"')
+    assert.ok(!p.ask.includes('FAKE-EXAMPLE-KEY-0000') && !p.ask.includes('FAKE-TOKEN'), 'no fake secret in ask')
+    assert.ok(!p.signature.includes('FAKE-EXAMPLE-KEY-0000') && !p.signature.includes('FAKE-TOKEN'), 'no fake secret in signature')
+    assert.equal(p.question, 'Do you want to proceed?')
+  })
 })
 
 describe('guard', () => {

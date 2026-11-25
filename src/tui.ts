@@ -36,6 +36,23 @@ const QUESTION_FOOTER = /^\s*Enter to select · /
 /** Strips the cursor arrow and trailing hint so a selection move does not look like a new prompt. */
 const cleanLabel = (s: string): string => s.replace(/\s+·\s+.*$/, (m) => (/auto mode|shift\+tab/.test(m) ? m : '')).trim()
 
+/**
+ * Masks API keys, tokens and passwords in text shown outside the terminal.
+ * Labelled values first (api_key=..., password: "...", token=...), then Bearer
+ * tokens, then known key prefixes (sk-, ghp_, github_pat_, AKIA, xox*).
+ * Anything not matching a pattern is left alone, so ordinary text is unchanged.
+ */
+export function redactSecrets(s: string): string {
+  return s
+    .replace(/\b((?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|secret|password|passwd|pwd)\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, '$1[redacted]')
+    .replace(/\bBearer\s+[A-Za-z0-9._~+\/-]+/gi, 'Bearer [redacted]')
+    .replace(/\bsk-[A-Za-z0-9]{20,}\b/g, '[redacted]')
+    .replace(/\bghp_[A-Za-z0-9]{20,}\b/g, '[redacted]')
+    .replace(/\bgithub_pat_[A-Za-z0-9_]{20,}\b/g, '[redacted]')
+    .replace(/\bAKIA[0-9A-Z]{16}\b/g, '[redacted]')
+    .replace(/\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g, '[redacted]')
+}
+
 export function parsePrompt(lines: readonly string[]): TuiPrompt | null {
   const L = lines.map((l) => l.replace(/\s+$/, ''))
   // The prompt is the last block on screen; its footer is the last non-empty line.
@@ -88,7 +105,8 @@ function parsePermission(L: string[], footer: number): TuiPrompt | null {
   const amendOpen = onLast && !/Tab to amend/.test(L[footer])
   last.freeText = 'amend'
   if (amendOpen) last.label = 'No'
-  return { kind: 'permission', title, ask, question, options: opts, editing, amendOpen, cursor, signature: sig('permission', title, ask, question, opts) }
+  const redactedOpts = opts.map((o) => ({ ...o, label: redactSecrets(o.label) }))
+  return { kind: 'permission', title: redactSecrets(title), ask: redactSecrets(ask), question: redactSecrets(question), options: redactedOpts, editing, amendOpen, cursor, signature: sig('permission', redactSecrets(title), redactSecrets(ask), redactSecrets(question), redactedOpts) }
 }
 
 function parseQuestion(L: string[], footer: number): TuiPrompt | null {
@@ -127,7 +145,8 @@ function parseQuestion(L: string[], footer: number): TuiPrompt | null {
   }
   // Several questions are answered on separate tabs; the island answers one at a time only.
   if (multi || opts.length < 2 || !question || !sequential(opts)) return null
-  return { kind: 'question', title: header, ask: question, question, options: opts, editing: typed && !/^Type something\.?$/.test(lastRaw), amendOpen: typed, cursor: cursorOf(L, q + 1, footer), signature: sig('question', header, question, question, opts) }
+  const redactedOpts = opts.map((o) => ({ ...o, label: redactSecrets(o.label) }))
+  return { kind: 'question', title: redactSecrets(header), ask: redactSecrets(question), question: redactSecrets(question), options: redactedOpts, editing: typed && !/^Type something\.?$/.test(lastRaw), amendOpen: typed, cursor: cursorOf(L, q + 1, footer), signature: sig('question', redactSecrets(header), redactSecrets(question), redactSecrets(question), redactedOpts) }
 }
 
 function cursorOf(L: string[], from: number, to: number): number {
