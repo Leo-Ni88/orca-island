@@ -1,6 +1,7 @@
 // One item per peek, jump targets, detail view, and answering only with the extra grant.
 import { afterEach, assert, describe, mockHost, mountWorker, test } from 'orca/testing'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, unlinkSync } from 'node:fs'
+import { inflateSync } from 'node:zlib'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import * as main from './worker'
@@ -510,27 +511,85 @@ test('real helper, off-screen: the list opens only on a click, one item per peek
   b.stop()
 })
 
-test('real helper: hidden views draw nothing (no ghost of the list under a peek or the pill)', { skip: process.platform !== 'darwin' || !existsSync(bin) } as never, async () => {
-  const msgs: HelperMsg[] = []
-  const b = new IslandBridge({ pluginDir: resolve(import.meta.dirname, '..'), kind: 'swift', bundleId: 'none', env: { ISLAND_OFFSCREEN: '1', ISLAND_LOCK_PATH: `/tmp/orca-island-test-${process.pid}-ghost.lock` }, config: () => ({ hotkey: false }), log: () => {}, onMessage: (m) => msgs.push(m) })
-  onExit.push(() => b.stop())
-  b.start()
-  for (let i = 0; i < 300 && !msgs.some((m) => m.type === 'ready'); i++) await tick(20)
-  // The brightest pixel in a rect (points, y down), from the helper's own drawing.
-  const probe = async (box: number[]): Promise<number> => {
-    const n = msgs.length
-    b.send({ type: 'snap', path: `/tmp/orca-island-test-${process.pid}-ghost.png`, probe: box })
-    for (let i = 0; i < 200 && !msgs.slice(n).some((m) => m.type === 'snapped'); i++) await tick(20)
-    return (msgs.slice(n).find((m) => m.type === 'snapped') as { max?: number })?.max ?? -1
+/** Decodes an 8-bit RGBA, non-interlaced PNG (what the helper's snap writes) into raw pixels. */
+function readPng(path: string): { w: number; h: number; px: Uint8Array } {
+  const buf = readFileSync(path)
+  let o = 8
+  let w = 0
+  let h = 0
+  const idat: Buffer[] = []
+  while (o < buf.length) {
+    const len = buf.readUInt32BE(o)
+    const type = buf.toString('ascii', o + 4, o + 8)
+    const data = buf.subarray(o + 8, o + 8 + len)
+    if (type === 'IHDR') {
+      w = data.readUInt32BE(0)
+      h = data.readUInt32BE(4)
+      assert.deepEqual([data[8], data[9], data[12]], [8, 6, 0], 'RGBA8, not interlaced')
+    } else if (type === 'IDAT') idat.push(data)
+    o += 12 + len
   }
-  for (const [id, title] of [['a', 'Deploy to staging?'], ['b', 'Run npm test?']]) b.send({ type: 'upsert', item: { id, title, state: 'needs_you', unread: true, detail: 'x', sub: 'claude · web-app / feat/login', group: 'web-app' } })
-  b.send({ type: 'groups', mode: 'project', groups: [{ key: 'web-app', name: 'web-app', counts: { needs_you: 2, failed: 0, done: 0, working: 0 }, collapsed: false, sections: [{ ids: ['a', 'b'] }] }] })
-  b.send({ type: 'peek', id: 'a', ttlMs: 60000 })
-  await tick(1200)
-  // Inside the peek, where only the hidden list's header (收起, the 项目 tab) would draw.
-  assert.equal(await probe([389, 2, 429, 20]), 0, 'no hidden text right of the peek title')
-  assert.equal(await probe([61, 38, 79, 52]), 0, 'no hidden text under the peek icon')
-  b.stop()
+  const raw = inflateSync(Buffer.concat(idat))
+  const px = new Uint8Array(w * h * 4)
+  const stride = w * 4
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (stride + 1)]
+    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1))
+    for (let x = 0; x < stride; x++) {
+      const a = x >= 4 ? px[y * stride + x - 4] : 0
+      const b = y > 0 ? px[(y - 1) * stride + x] : 0
+      const c = x >= 4 && y > 0 ? px[(y - 1) * stride + x - 4] : 0
+      const p = a + b - c
+      const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c)
+      const pred = f === 0 ? 0 : f === 1 ? a : f === 2 ? b : f === 3 ? (a + b) >> 1 : pa <= pb && pa <= pc ? a : pb <= pc ? b : c
+      px[y * stride + x] = (line[x] + pred) & 255
+    }
+  }
+  return { w, h, px }
+}
+
+test('real helper: hidden views draw nothing (no ghost of the list under a peek or the pill)', { skip: process.platform !== 'darwin' || !existsSync(bin) } as never, async () => {
+  // The same peek is drawn twice: once with a long list mounted (hidden) behind it, once with no list
+  // at all. Any difference inside the island is the hidden list showing through. Comparing two renders
+  // on the same machine holds whatever the fonts, the Swift version or the display scale.
+  const shot = async (withList: boolean, n: number): Promise<{ w: number; h: number; px: Uint8Array }> => {
+    const msgs: HelperMsg[] = []
+    const b = new IslandBridge({ pluginDir: resolve(import.meta.dirname, '..'), kind: 'swift', bundleId: 'none', env: { ISLAND_OFFSCREEN: '1', ISLAND_LOCK_PATH: `/tmp/orca-island-test-${process.pid}-ghost${n}.lock` }, config: () => ({ hotkey: false }), log: () => {}, onMessage: (m) => msgs.push(m) })
+    onExit.push(() => b.stop())
+    b.start()
+    for (let i = 0; i < 300 && !msgs.some((m) => m.type === 'ready'); i++) await tick(20)
+    b.send({ type: 'demo_clock', now: 1_800_000_000_000 })
+    const peek = { id: 'a', title: 'Deploy to staging?', state: 'needs_you', unread: true, detail: 'x', sub: 'claude · web-app / feat/login', group: 'web-app', stateSince: 1_800_000_000_000, startedAt: 1_800_000_000_000 }
+    b.send({ type: 'upsert', item: peek })
+    if (withList) {
+      const ids = ['a']
+      for (let k = 0; k < 12; k++) {
+        ids.push(`r${k}`)
+        b.send({ type: 'upsert', item: { ...peek, id: `r${k}`, title: `Row ${k} with a fairly long title`, detail: 'Some detail text on this row' } })
+      }
+      b.send({ type: 'groups', mode: 'project', groups: [{ key: 'web-app', name: 'web-app', counts: { needs_you: ids.length, failed: 0, done: 0, working: 0 }, collapsed: false, sections: [{ ids }] }] })
+    }
+    b.send({ type: 'peek', id: 'a', ttlMs: 60000 })
+    await tick(1200)
+    const path = join(tmpdir(), `orca-island-test-${process.pid}-ghost${n}.png`)
+    if (existsSync(path)) unlinkSync(path)
+    const k = msgs.length
+    b.send({ type: 'snap', path, lit: true }) // answers "snapped" once the file is written
+    for (let i = 0; i < 200 && !msgs.slice(k).some((m) => m.type === 'snapped'); i++) await tick(20)
+    b.stop()
+    return readPng(path)
+  }
+  const a = await shot(true, 1)
+  const b = await shot(false, 2)
+  assert.deepEqual([a.w, a.h], [b.w, b.h])
+  let diff = 0
+  let worst = 0
+  for (let i = 0; i < a.px.length; i += 4) {
+    const d = Math.max(Math.abs(a.px[i] - b.px[i]), Math.abs(a.px[i + 1] - b.px[i + 1]), Math.abs(a.px[i + 2] - b.px[i + 2]), Math.abs(a.px[i + 3] - b.px[i + 3]))
+    if (d > 0) diff++
+    worst = Math.max(worst, d)
+  }
+  assert.equal(diff, 0, `the hidden list changes ${diff} pixels (worst ${worst}/255)`)
 })
 
 test('real helper: clearing finished rows leaves no empty group header and recounts the rest', { skip: process.platform !== 'darwin' || !existsSync(bin) } as never, async () => {

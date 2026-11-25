@@ -263,7 +263,7 @@ describe('status bar pause button (island.power)', () => {
     assert.ok(p.until! - t0 >= 3600_000 - 1000 && p.until! - t0 <= 3600_000 + 1000)
     const pw = w.host.callsOf('statusBar.update').filter((c) => (c as { id: string }).id === 'island-power').at(-1) as { visible: boolean }
     assert.equal(pw.visible, false, 'no pause button while off')
-    assert.match(w.status().text, /^Island 已关闭（到 /)
+    assert.match(w.status().text, /^Island 已关闭（到(明天)? /)
     await w.worker.command('island.statusClick')
     assert.equal((await w.req('island.items')).power.on, true)
     const pw2 = w.host.callsOf('statusBar.update').filter((c) => (c as { id: string }).id === 'island-power').at(-1) as { visible: boolean }
@@ -298,7 +298,7 @@ describe('never locked out', () => {
   test('turning off always lands an off-state update, and one notification says how to get back', async () => {
     const w = await up()
     await w.req('island.power', { on: false, choice: 'hour' })
-    assert.match(w.status().text, /^Island 已关闭（到 /)
+    assert.match(w.status().text, /^Island 已关闭（到(明天)? /)
     const n = w.host.callsOf('notifications.show') as { title: string; body: string }[]
     assert.equal(n.length, 1, 'exactly one notification')
     assert.equal(n[0].title, 'Island 已关闭')
