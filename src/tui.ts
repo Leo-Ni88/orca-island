@@ -54,22 +54,32 @@ export function redactSecrets(s: string): string {
     s
       // scheme://user:PASS@host
       .replace(/\b([a-z][a-z0-9+.-]*:\/\/[^\s:@/]+:)[^\s@/]+@/gi, `$1${R}@`)
+      // curl -u user:PASS / --user user:PASS (keep the user)
+      .replace(/(\s(?:-u|--user)(?:\s+|=))(?:"([^"\s:]+):[^"]*"|'([^'\s:]+):[^']*'|([^\s:"']+):(?!\[redacted\])[^\s"']+)/g, (_m, pre: string, dq?: string, sq?: string, bare?: string) =>
+        dq !== undefined ? `${pre}"${dq}:${R}"` : sq !== undefined ? `${pre}'${sq}:${R}'` : `${pre}${bare}:${R}`)
+      // redis-cli -a PASS (only -a directly after redis-cli)
+      .replace(/(\bredis-cli\s+-a\s+)(?:"[^"]*"|'[^']*'|[^\s]+)/g, `$1${R}`)
+      // npm: _authToken followed by a space or =; npm_ tokens
+      .replace(/(_authToken(?:\s+|=))(?:"[^"]*"|'[^']*'|[^\s"']+)/g, `$1${R}`)
+      .replace(/\bnpm_[A-Za-z0-9]{36,}\b/g, R)
       // -pPASS (mysql), --password=PASS, --password PASS
       .replace(/(\s-p)(?=\S)(?!assword)[^\s'"]+/g, `$1${R}`)
       .replace(/(--password(?:=|\s+))(?:"[^"]*"|'[^']*'|[^\s]+)/gi, `$1${R}`)
       // "password": "with spaces" (JSON, either quote style for the key)
       .replace(/(["'](?:[A-Za-z0-9_-]*(?:password|passwd|secret|token|api[_-]?key|apikey|private[_-]?key)[A-Za-z0-9_-]*)["']\s*:\s*)("[^"]*"|'[^']*')/gi, `$1"${R}"`)
       // NAME=value where NAME ends in a secret word (env style)
-      .replace(/\b([A-Za-z_][A-Za-z0-9_]*(?:PASSWORD|PASSWD|TOKEN|SECRET|API_KEY|APIKEY|ACCESS_KEY|PRIVATE_KEY)=)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, `$1${R}`)
+      .replace(/\b([A-Za-z_][A-Za-z0-9_]*(?:PASSWORD|PASSWD|TOKEN|SECRET|SECRET_KEY|API_KEY|APIKEY|ACCESS_KEY|PRIVATE_KEY)=)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, `$1${R}`)
       // aws_secret_access_key <value> (space, as in ~/.aws/credentials or CLI output)
       .replace(/\b(aws_secret_access_key\s+)(?![:=])([A-Za-z0-9/+=]{16,})/gi, `$1${R}`)
       // clear key names: always
-      .replace(new RegExp(`\\b(${KEYNAME}\\s*[:=]\\s*)(?!\\[redacted\\])(?:"[^"]*"|'[^']*'|[^\\s,;]+)`, 'gi'), `$1${R}`)
+      .replace(new RegExp(`\\b(${KEYNAME}\\s*[:=]\\s*)(?!\\[redacted\\])(?:"[^"]*"|'[^']*'|[^\\s,;"']+)`, 'gi'), `$1${R}`)
       // loose words: only a secret-looking value
-      .replace(new RegExp(`\\b(${LOOSE}\\s*[:=]\\s*)(?!\\[redacted\\])("[^"]*"|'[^']*'|[^\\s,;]+)`, 'gi'), (m, label: string, v: string) => (secretish(v) ? label + R : m))
+      .replace(new RegExp(`\\b(${LOOSE}\\s*[:=]\\s*)(?!\\[redacted\\])("[^"]*"|'[^']*'|[^\\s,;"']+)`, 'gi'), (m, label: string, v: string) => (secretish(v) ? label + R : m))
       .replace(/\bBearer\s+[A-Za-z0-9._~+\/-]+/gi, `Bearer ${R}`)
       // sk-…, including sk-ant-… and sk-proj-… (dashes and underscores inside)
       .replace(/\bsk-[A-Za-z0-9_-]{20,}/g, R)
+      // Stripe-style live and test keys
+      .replace(/\b(?:sk|rk|pk)_(?:live|test)_[A-Za-z0-9]{16,}\b/g, R)
       .replace(/\bgh[pousr]_[A-Za-z0-9]{20,}\b/g, R)
       .replace(/\bgithub_pat_[A-Za-z0-9_]{20,}\b/g, R)
       .replace(/\bAKIA[0-9A-Z]{16}\b/g, R)

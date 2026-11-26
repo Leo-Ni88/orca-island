@@ -111,7 +111,16 @@ describe('parsing recorded Claude Code 2.1.322 screens', () => {
       ['{"password": "fake pass with spaces", "user": "x"}', '{"password": "[redacted]", "user": "x"}'],
       ['{"apiToken": "fake"}', '{"apiToken": "[redacted]"}'],
       ['client_secret: abc', 'client_secret: [redacted]'],
-      ['password: "x"', 'password: [redacted]']
+      ['password: "x"', 'password: [redacted]'],
+      ['curl -u admin:hunter2 https://api.example.invalid', 'curl -u admin:[redacted] https://api.example.invalid'],
+      ['curl --user "deploy:Fake Pass 1" https://x.invalid', 'curl --user "deploy:[redacted]" https://x.invalid'],
+      ['curl --user=deploy:FakePass1 https://x.invalid', 'curl --user=deploy:[redacted] https://x.invalid'],
+      ['redis-cli -a FakeRedisPass1 ping', 'redis-cli -a [redacted] ping'],
+      ['export STRIPE_SECRET_KEY=sk_live_FAKEFAKEFAKEFAKE0000', 'export STRIPE_SECRET_KEY=[redacted]'],
+      ['key sk_test_FAKEFAKEFAKEFAKE0000 and rk_live_FAKEFAKEFAKEFAKE0000', 'key [redacted] and [redacted]'],
+      ['npm config set //registry.example.invalid/:_authToken npm_FAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE00', 'npm config set //registry.example.invalid/:_authToken [redacted]'],
+      ['token npm_FAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE00 here', 'token [redacted] here'],
+      ['echo "password: Fake-1234"', 'echo "password: [redacted]"']
     ]
     for (const [i, o] of cases) assert.equal(redactSecrets(i), o, i)
   })
@@ -122,6 +131,11 @@ describe('parsing recorded Claude Code 2.1.322 screens', () => {
       'git show 3f9a1c2e8b7d6a5f4e3d2c1b0a9f8e7d6c5b4a39',
       'the secret santa list is ready',
       'set the password: later',
+      'echo "set the password: later"',
+      "echo 'the token: none'",
+      'redis-cli ping',
+      'cargo run -a fast',
+      'npm_config_cache=/tmp/npm',
       'the token: none',
       'mysql -p app',
       'run the tests, no secrets here',
