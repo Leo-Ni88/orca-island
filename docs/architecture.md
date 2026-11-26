@@ -1,6 +1,6 @@
 # Architecture
 
-Orca Island has two parts:
+Island for Orca has two parts:
 - an Orca **trusted-worker plugin** in TypeScript, which decides what to show,
 - a small **native helper** in Swift/SwiftUI, which draws the island.
 
@@ -54,7 +54,7 @@ Items are keyed by session (`s:<sessionId>`, else `p:<paneKey>`). Rules learned 
 - Off stops the helper on purpose. That is not counted as a crash, and nothing falls back to notifications.
 - While off: no alerts, and no terminal reads or keys, even for an answer already under way. Rows are still tracked.
 - The status bar summary item reads 「Island 已关闭」 and turns the island back on. Status bar updates are retried until Orca accepts them, and re-applied while off.
-- The 启用 Orca Island setting mirrors the switch both ways.
+- The 启用 Island setting mirrors the switch both ways.
 
 **Suppression.**
 - When Orca is in front and the item is in the focused workspace, it stays silent.

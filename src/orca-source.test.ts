@@ -7,7 +7,7 @@ import * as main from './worker'
 
 // Workers in tests never compile the helper.
 main.testDeps.helperBinary = ''
-import { OrcaSource, parseBotItems, parseFailedRuns, parseGates, parsePlugins, cliRunner, firstLine, type SourceOutput } from './orca-source'
+import { OrcaSource, botItemUrl, parseBotItems, parseFailedRuns, parseGates, parsePlugins, cliRunner, firstLine, type SourceOutput } from './orca-source'
 import { Directory, MINE, buildGroups, fallbackName, isGeneric, secondary } from './directory'
 import { SessionStore, itemIdOf, type Alert, type ExternalEntry, type Item } from './state'
 
@@ -76,7 +76,7 @@ describe('parsers', () => {
     assert.equal(a.title, '#11 去掉前缀')
     assert.equal(a.detail, '兼容期多久？')
     assert.deepEqual(a.options, ['4 周', '8 周'])
-    assert.equal(a.openUrl, 'orca://bot/11111111-0000-4000-8000-000000000001')
+    assert.equal(a.openUrl, 'orca://bot/11111111-0000-4000-8000-000000000001?botItem=item-1')
     assert.equal(b.detail, '需要看一下')
     assert.equal(b.options, undefined)
   })
@@ -318,7 +318,7 @@ describe('worker', () => {
     await until(() => w.host.callsOf('notifications.show').length > 0)
     await tick(300)
     const n = w.host.callsOf('notifications.show') as { title: string }[]
-    assert.deepEqual(n.map((x) => x.title), ['Orca Island: 4 个需要你，1 个失败'], 'one refresh, one notification')
+    assert.deepEqual(n.map((x) => x.title), ['Island for Orca: 4 个需要你，1 个失败'], 'one refresh, one notification')
     const r = (await w.worker.request('island.next' as never)) as { jumped: boolean }
     assert.ok(r.jumped)
     cli.st.fx.items.items.length = 0
@@ -345,7 +345,7 @@ describe('worker', () => {
     assert.equal(rows.length, 1)
     assert.equal(rows[0].id, itemIdOf({ paneKey: CHAT }))
     assert.equal(rows[0].name, 'alpha · Home：daily')
-    assert.equal(rows[0].openUrl, 'orca://bot/11111111-0000-4000-8000-000000000001')
+    assert.equal(rows[0].openUrl, 'orca://bot/11111111-0000-4000-8000-000000000001', 'a chat row has no item')
     assert.equal(rows[0].tab, 'Home：daily', 'the chat tab to look for')
     const n = w.host.callsOf('notifications.show') as { title: string; body: string }[]
     assert.equal(n.length, 1)
@@ -363,11 +363,21 @@ describe('worker', () => {
     await until(() => w.host.callsOf('notifications.show').length === 1)
     assert.equal((w.host.callsOf('notifications.show')[0] as { title: string }).title, '需要你：登录页')
   })
+  test('bot item links: ?botItem=<uid> only for a valid uid (not all digits, plain token)', () => {
+    const B = '11111111-0000-4000-8000-000000000001'
+    assert.equal(botItemUrl(B, 'item-1'), `orca://bot/${B}?botItem=item-1`)
+    assert.equal(botItemUrl(B, 'a1B2_c3-d4'), `orca://bot/${B}?botItem=a1B2_c3-d4`)
+    assert.equal(botItemUrl(B, '12345'), `orca://bot/${B}`, 'all digits: refused upstream, so not sent')
+    assert.equal(botItemUrl(B, 'x y'), `orca://bot/${B}`)
+    assert.equal(botItemUrl(B, 'a&b=c'), `orca://bot/${B}`)
+    assert.equal(botItemUrl(B, ''), `orca://bot/${B}`)
+    assert.equal(botItemUrl(B, 'x'.repeat(129)), `orca://bot/${B}`)
+  })
   test('click on a bot item opens its deep link and nothing else', async () => {
     const w = await up(fakeCli({ plugins: { plugins: [] }, runs: { runs: [] }, gates: { gates: [] } }))
     await until(async () => (await w.items()).some((i) => i.kind === 'bot_item'))
     await w.worker.command('island.statusClick')
-    assert.deepEqual(w.opened, ['orca://bot/11111111-0000-4000-8000-000000000001'])
+    assert.deepEqual(w.opened, ['orca://bot/11111111-0000-4000-8000-000000000001?botItem=item-1'], 'the item uid rides along (stablyai/orca#49398); older Orca ignores it')
     assert.equal(w.host.callsOf('terminal.focus').length, 0)
   })
   test('grouping mode is remembered', async () => {

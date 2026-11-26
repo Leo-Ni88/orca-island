@@ -8,7 +8,7 @@ not in a public issue. You should get an answer within a week.
 
 ## What the plugin can do
 
-Orca Island runs as an Orca **trusted worker**. Orca shows you the access it asks for before you approve it:
+Island for Orca runs as an Orca **trusted worker**. Orca shows you the access it asks for before you approve it:
 
 | Capability | Used for |
 |---|---|
@@ -43,7 +43,7 @@ It also adds:
 Everything goes into plugin storage, inside Orca's data folder:
 - **The current rows.** Titles, questions, commands or tool names, options and message lines, taken from Orca's own status and bot data. They are kept so the list survives a restart.
 - **Your state.** Hidden (snoozed) rows, removed ones, the on/off state and the grouping mode.
-- **Recorded events, only if you turn on the `record` setting.** For debugging, it then stores the raw agent and workspace events (up to 3000) until you clear them with "Orca Island: Clear recorded events" or turn the setting off.
+- **Recorded events, only if you turn on the `record` setting.** For debugging, it then stores the raw agent and workspace events (up to 3000) until you clear them with "Island: Clear recorded events" or turn the setting off.
 
 Its log (`orca plugin logs`) has jump targets, errors and a short restore summary. Terminal text never goes there.
 
@@ -62,7 +62,7 @@ Answering is off by default. You turn it on in the island's ⚙ and confirm.
 
 ## Opening things
 
-When you jump to a bot, the plugin asks macOS to open `orca://bot/<id>` (`/usr/bin/open`). It opens no other URLs.
+When you jump to a bot, the plugin asks macOS to open `orca://bot/<id>` (`/usr/bin/open`). For a bot item it adds `?botItem=<item id>`, so Orca versions that support it open the item itself. It opens no other URLs.
 
 ## The native helper
 

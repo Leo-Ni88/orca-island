@@ -1,4 +1,4 @@
-// Orca Island worker.
+// Island for Orca worker.
 // Event -> SessionStore (src/state.ts) -> delivery:
 //   L1 statusBar summary (always), L2 native helper (macOS, src/bridge.ts), L3 notifications.show
 //   when the helper is unavailable (breaker tripped / missing / another helper owns the island) or
@@ -94,6 +94,41 @@ export function offStatus(p: Power, now: number): { text: string; tone: 'neutral
   return { text: `Island 已关闭${end}`, tone: 'neutral', tooltip: '点击打开 Island' }
 }
 
+/** A title cut to about `max` characters (CJK counts double), on a word boundary when one is near. */
+export function shortTitle(t: string, max = 24): string {
+  let w = 0
+  let out = ''
+  for (const ch of t) {
+    w += /[\u2e80-\uffff]/.test(ch) ? 2 : 1
+    if (w > max) {
+      // Never in the middle of a Latin word: back up to the last space or punctuation if it is not far.
+      const midWord = /[A-Za-z0-9]$/.test(out) && /[A-Za-z0-9]/.test(ch)
+      const cut = Math.max(out.lastIndexOf(' '), ...['：', ':', '，', ',', '、'].map((p) => out.lastIndexOf(p)))
+      const keep = midWord && cut > out.length * 0.5 ? out.slice(0, cut) : out
+      return keep.replace(/[\s,，、:：;；\-–—]+$/, '') + '…'
+    }
+    out += ch
+  }
+  return t
+}
+/**
+ * What to say after a jump Orca could not finish for us (bot items and chats). Orca opens the bot but
+ * cannot open one item or chat tab for a plugin, so name exactly what to click, number first.
+ * `again`: this bot was opened by the previous jump too, so nothing visible changes; say so plainly.
+ */
+export function jumpHint(it: Pick<Item, 'kind' | 'bot' | 'workspace' | 'title' | 'name' | 'tab' | 'botChat'>, again: boolean): string | undefined {
+  const bot = it.bot ?? it.workspace ?? 'Orca'
+  const lead = again ? `${bot} 已经打开。` : `已打开 ${bot}。`
+  if (it.kind === 'bot_item') {
+    const t = it.name ?? it.title
+    const m = /^(#\d+)\s*(.*)$/.exec(t)
+    const label = m ? `${m[1]} ${shortTitle(m[2])}` : shortTitle(t)
+    return `${m ? m[1] + '：' : ''}${lead}请在右侧「主页」→「需要你处理」里点开「${label}」`
+  }
+  if (it.tab) return `${lead}请在右侧「聊天」里切到「${shortTitle(it.tab, 20)}」`
+  return undefined
+}
+
 /** What kind of row, for a small glyph: a terminal session, a bot (item or chat), or Orca itself. */
 export const rowSource = (i: Item): 'terminal' | 'bot' | 'orca' | '' =>
   i.kind === 'bot_item' || i.botChat ? 'bot' : i.kind && i.kind !== 'session' ? 'orca' : i.terminalId ? 'terminal' : ''
@@ -141,7 +176,7 @@ export function statusText(s: Summary, next?: Item): { text: string; tone: 'neut
   if (s.working) parts.push(`运行中 ${s.working}`)
   const text = parts.join(' · ') || 'Island'
   const tone = s.blocked ? 'warning' : s.unreadFailed ? 'danger' : s.unreadDone ? 'success' : 'neutral'
-  const tooltip = next ? `下一个：${displayName(next)}（${groupLabel(next)}），点击跳转` : 'Orca Island'
+  const tooltip = next ? `下一个：${displayName(next)}（${groupLabel(next)}），点击跳转` : 'Island for Orca'
   return { text, tone, tooltip }
 }
 
@@ -163,7 +198,7 @@ export function notificationFor(a: Alert, items: Item[]): { title: string; body:
   }
   const c = a.counts
   const bits = [c.needs_you && `${c.needs_you} 个需要你`, c.failed && `${c.failed} 个失败`, c.done && `${c.done} 个完成`, c.interrupted && `${c.interrupted} 个中断`].filter(Boolean)
-  return { title: `Orca Island: ${bits.join('，')}`, body: its.map(displayName).slice(0, 4).join(' · ') }
+  return { title: `Island for Orca: ${bits.join('，')}`, body: its.map(displayName).slice(0, 4).join(' · ') }
 }
 
 const timers = {
@@ -199,7 +234,7 @@ export default function activate(orca: OrcaWorkerApi): void {
     orcaSource: boolean
     orcaCli: string
     allowAnswer: boolean
-    /** 启用 Orca Island: the master switch, mirrored from `power` (either one changes both). */
+    /** 启用 Island: the master switch, mirrored from `power` (either one changes both). */
     enabled: boolean
   }
   let settings: Settings = {
@@ -314,7 +349,7 @@ export default function activate(orca: OrcaWorkerApi): void {
   const row = (i: Item) => {
     const t = jumpTarget(i)
     const source = rowSource(i)
-    return { ...i, title: displayName(i), sub: secondary(i), group: groupLabel(i), reply: !!i.botChat && i.state === 'done', line: peekLine(i), jump: t.tab ? `${t.label}（标签「${t.tab}」）` : t.label, isNew: i.state === 'needs_you' && i.unread, source }
+    return { ...i, title: displayName(i), sub: secondary(i), group: groupLabel(i), reply: !!i.botChat && i.state === 'done', line: peekLine(i), jump: jumpHint(i, false)?.replace(/^(#\d+：)?已打开 [^。]+。/, '$1打开后') ?? (t.tab ? `${t.label}（标签「${t.tab}」）` : t.label), isNew: i.state === 'needs_you' && i.unread, source }
   }
   // Peeks shown and peeks not shown (with why), kept in memory so a live check has evidence.
   const peekLog: Record<string, unknown>[] = []
@@ -489,8 +524,10 @@ export default function activate(orca: OrcaWorkerApi): void {
     source.start()
   }
   disposers.push(() => source?.stop())
+  /** The bot the previous jump opened: opening it again changes nothing on screen. */
+  let lastBotUrl: string | undefined
   const openUrl = (url: string): void => {
-    if (!/^orca:\/\/bot\/[A-Za-z0-9_-]{1,128}$/.test(url)) return
+    if (!/^orca:\/\/bot\/[A-Za-z0-9_-]{1,128}(\?botItem=(?!\d+$)[A-Za-z0-9_-]{1,128})?$/.test(url)) return
     if (testDeps.open) return testDeps.open(url)
     execFile(process.platform === 'darwin' ? '/usr/bin/open' : 'xdg-open', [url], (err) => err && orca.log(`open ${url}: ${String(err)}`))
   }
@@ -517,13 +554,11 @@ export default function activate(orca: OrcaWorkerApi): void {
     // Orca can open the bot but cannot pick its right-sidebar tab, nor a chat tab, for a plugin:
     // say where to look. Bot items are listed under 主页 (需要你处理); chats under 聊天.
     if (!result.exact) {
-      const where = it.bot ?? it.workspace ?? 'Orca'
-      const text =
-        it.kind === 'bot_item'
-          ? `已打开 ${where}，请在右侧切到「主页」查看待你决定`
-          : result.tab
-            ? `已打开 ${where}，请在右侧「聊天」里切到「${result.tab}」`
-            : undefined
+      const t = jumpTarget(it)
+      const botOf = (u: string) => u.replace(/\?.*$/, '')
+      const again = t.kind === 'bot' && botOf(t.url) === lastBotUrl
+      if (t.kind === 'bot') lastBotUrl = botOf(t.url)
+      const text = jumpHint(it, again)
       if (text) {
         bridge?.send({ type: 'hint', text })
         testDeps.hint?.(text)
@@ -571,9 +606,10 @@ export default function activate(orca: OrcaWorkerApi): void {
     // switch is off; none = nothing to answer.
     if (it.kind === 'bot_item') {
       // One block per question, each with its own options; the whole text only when there are none.
+      const where = jumpHint(it, false)?.replace(/^(#\d+：)?已打开 [^。]+。/, '去 Orca 后，')
       d = it.asks?.length
-        ? { ...base, question: it.intro ?? '', asks: it.asks, inputKind: 'orca', primary: '去 Orca 回答' }
-        : { ...base, question: it.question ?? it.detail, inputKind: 'orca', primary: '去 Orca 回答' }
+        ? { ...base, question: it.intro ?? '', asks: it.asks, inputKind: 'orca', primary: '去 Orca 回答', note: where }
+        : { ...base, question: it.question ?? it.detail, inputKind: 'orca', primary: '去 Orca 回答', note: where }
     }
     else if (it.state === 'needs_you' && it.terminalId && (it.agent === 'claude' || !it.agent) && !canAnswer()) {
       // Switch off: the terminal is not read, so only what Orca's agent list says is shown.
@@ -724,6 +760,10 @@ export default function activate(orca: OrcaWorkerApi): void {
       case 'error':
         orca.log(`helper error ${msg.code}: ${msg.message}`)
         break
+      case 'open_url_test':
+        // Tests only (island.helperMsg): what openUrl lets through.
+        openUrl(String(msg.url))
+        break
       case 'setting_test':
         // Tests only (island.helperMsg): a setting changed in Orca's settings UI.
         await orca.settings.set(String(msg.key), msg.value as never)
@@ -747,7 +787,7 @@ export default function activate(orca: OrcaWorkerApi): void {
     orca.log(`helper build: ${build.reason}${build.detail ? ` (${build.detail})` : ''}; using the JXA helper`)
     if (build.reason === 'no-swiftc' && !toldNoSwiftc) {
       toldNoSwiftc = true
-      void orca.host.call('notifications.show', { title: 'Orca Island：正在使用简化版 Island', body: '安装 Xcode 命令行工具后可使用完整版：在终端运行 xcode-select --install，然后重启插件。' }).catch(() => undefined)
+      void orca.host.call('notifications.show', { title: 'Island for Orca：正在使用简化版 Island', body: '安装 Xcode 命令行工具后可使用完整版：在终端运行 xcode-select --install，然后重启插件。' }).catch(() => undefined)
     }
     return undefined
   }
@@ -824,7 +864,7 @@ export default function activate(orca: OrcaWorkerApi): void {
     if (!next.on) {
       // The one notification while off: how to get back (sent as it goes off; it says where).
       void orca.host
-        .call('notifications.show', { title: 'Island 已关闭', body: `${next.until ? `会在 ${new Date(next.until).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 自动打开。` : ''}点状态栏的「Island 已关闭」或在插件设置里打开「启用 Orca Island」。` })
+        .call('notifications.show', { title: 'Island 已关闭', body: `${next.until ? `会在 ${new Date(next.until).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 自动打开。` : ''}点状态栏的「Island 已关闭」或在插件设置里打开「启用 Island」。` })
         .catch((e) => orca.log(`notifications.show failed: ${String(e)}`))
       peeks.clear()
       openId = undefined

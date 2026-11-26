@@ -3,7 +3,7 @@
   "manifestVersion": 2,
   "id": "agent-island",
   "publisher": "leo-ni88",
-  "name": "Orca Island",
+  "name": "Island for Orca",
   "version": "1.0.2",
   "description": "A notch-style island for Orca on macOS: see which agents need you, finished or failed at a glance, and jump straight to them.",
   "author": {
@@ -16,7 +16,7 @@
   "icon": "media/icon.png",
   "cover": {
     "path": "media/cover.png",
-    "alt": "Orca Island over a desktop: a prompt that needs you"
+    "alt": "Island for Orca over a desktop: a prompt that needs you, the list, and the prompt opened in the island"
   },
   "screenshots": [
     {
@@ -94,35 +94,35 @@
     "commands": [
       {
         "id": "island.dump",
-        "title": "Orca Island: Dump recorded events"
+        "title": "Island: Dump recorded events"
       },
       {
         "id": "island.clear",
-        "title": "Orca Island: Clear recorded events"
+        "title": "Island: Clear recorded events"
       },
       {
         "id": "island.probe",
-        "title": "Orca Island: Probe agents.list / workspace.list"
+        "title": "Island: Probe agents.list / workspace.list"
       },
       {
         "id": "island.helper.status",
-        "title": "Orca Island: Helper status and round-trip test"
+        "title": "Island: Helper status and round-trip test"
       },
       {
         "id": "island.helper.restart",
-        "title": "Orca Island: Restart helper"
+        "title": "Island: Restart helper"
       },
       {
         "id": "island.test",
-        "title": "Orca Island: Push a test item to the island"
+        "title": "Island: Push a test item to the island"
       },
       {
         "id": "island.statusClick",
-        "title": "Orca Island: Status bar pressed"
+        "title": "Island: Status bar pressed"
       },
       {
         "id": "island.power",
-        "title": "Orca Island: Turn the island off for 1 hour"
+        "title": "Island: Turn the island off for 1 hour"
       }
     ],
     "statusBarItems": [
@@ -131,7 +131,7 @@
         "text": "Island",
         "icon": "bell",
         "tone": "neutral",
-        "tooltip": "Orca Island",
+        "tooltip": "Island for Orca",
         "command": "island.statusClick"
       },
       {
@@ -139,14 +139,14 @@
         "text": "",
         "icon": "pause",
         "tone": "neutral",
-        "tooltip": "Turn Orca Island off for 1 hour",
+        "tooltip": "Turn the island off for 1 hour",
         "command": "island.power"
       }
     ],
     "settings": [
       {
         "key": "enabled",
-        "title": "启用 Orca Island",
+        "title": "启用 Island",
         "description": "关闭后不显示 Island、不发提醒、不读写终端，但仍在后台记录状态。在 Orca 状态栏点「Island 已关闭」也可以重新打开。",
         "type": "boolean",
         "default": true
@@ -257,7 +257,7 @@
       },
       {
         "key": "orcaCli",
-        "title": "orca 命令行路径",
+        "title": "命令行工具 orca 的路径",
         "description": "留空时使用 ORCA_CLI_COMMAND，否则用 Orca.app 自带的。",
         "type": "string",
         "default": ""

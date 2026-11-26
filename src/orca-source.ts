@@ -63,6 +63,13 @@ export type Chat = { id: string; title?: string | null }
 
 type Any = Record<string, any>
 export const botUrl = (botId: string): string => `orca://bot/${botId}`
+/**
+ * A bot link that also names one item: `orca://bot/<botId>?botItem=<uid>` (stablyai/orca#49398).
+ * Orca versions without that change ignore the parameter and still open the bot, so it is safe to
+ * send now. Uids that are all digits (or not a plain token) are refused by that change: none sent then.
+ */
+export const BOT_ITEM_UID = /^(?!\d+$)[A-Za-z0-9_-]{1,128}$/
+export const botItemUrl = (botId: string, uid: string): string => (BOT_ITEM_UID.test(uid) ? `${botUrl(botId)}?botItem=${encodeURIComponent(uid)}` : botUrl(botId))
 
 // ---- pure parsers (tested on recorded shapes) ---------------------------------------------------
 
@@ -89,7 +96,7 @@ export function parseBotItems(result: Any, now: number): External[] {
         since: i.lastActivityAt ?? now,
         botId: bot.id,
         botName: bot.name,
-        openUrl: botUrl(bot.id)
+        openUrl: botItemUrl(bot.id, i.uid)
       }
     })
 }

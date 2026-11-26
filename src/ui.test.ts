@@ -114,6 +114,19 @@ describe('peek queue', () => {
     h.pq.setLocked(false, sum)
     assert.deepEqual(h.shown, ['away:a', 'away:a'])
   })
+  test('jump hints name the item, number first; say plainly when the bot is already open', () => {
+    const bi = { kind: 'bot_item' as const, bot: 'atlas', title: '#61 处理贡献者的 PR #8：redact secrets in prompt excerpts' }
+    assert.equal(main.jumpHint(bi, false), '#61：已打开 atlas。请在右侧「主页」→「需要你处理」里点开「#61 处理贡献者的 PR #8…」')
+    assert.equal(main.jumpHint(bi, true), '#61：atlas 已经打开。请在右侧「主页」→「需要你处理」里点开「#61 处理贡献者的 PR #8…」')
+    assert.equal(main.jumpHint({ botChat: true, bot: 'nova', tab: 'Release planning for the next sprint' }, false), '已打开 nova。请在右侧「聊天」里切到「Release planning for…」')
+    assert.equal(main.jumpHint({ kind: 'session', title: 'x' }, false), undefined)
+  })
+  test('titles are cut on width, CJK counting double', () => {
+    assert.equal(main.shortTitle('Deploy to staging?'), 'Deploy to staging?')
+    assert.equal(main.shortTitle('处理贡献者的 PR #8 并合并到主分支然后发布'), '处理贡献者的 PR #8 并合…')
+    assert.equal(main.shortTitle('Fix the flaky integration tests in the payment service'), 'Fix the flaky…')
+    assert.ok(main.shortTitle('a'.repeat(80)).length <= 25)
+  })
   test('summary wording: only what changed, as sentences, with names', () => {
     const T = 10_000_000
     let n = 0
@@ -372,7 +385,7 @@ describe('detail view and answering', () => {
     assert.deepEqual(d.asks[1].options.map((o: { label: string }) => o.label), ['能打，焦点也还回去了', '能打，但焦点没还回去', '打不了字'])
     assert.equal(d.primary, '去 Orca 回答')
     await w.req('island.helperMsg', { type: 'clicked', action: 'pick', id: 'x:item:item-multi', label: '打不了字' })
-    assert.deepEqual(opened, ['orca://bot/11111111-0000-4000-8000-000000000001'])
+    assert.deepEqual(opened, ['orca://bot/11111111-0000-4000-8000-000000000001?botItem=item-multi'])
   })
   test('detail explains a missing input: Orca-only, or the switch is off', async () => {
     const bot = await up({ cli: true, grant: true })
@@ -404,7 +417,9 @@ describe('detail view and answering', () => {
     main.testDeps.hint = (t) => hints.push(t)
     for (let i = 0; i < 50 && !(await w.req('island.items')).items.some((x: { id: string }) => x.id === 'x:item:item-1'); i++) await tick(40)
     assert.equal((await w.req('island.jump', { id: 'x:item:item-1' })).target, 'bot')
-    assert.deepEqual(hints, ['已打开 alpha，请在右侧切到「主页」查看待你决定'])
+    // Jumping again to the same bot (e.g. the owner is on 主页 but looking at another item): no "opened".
+    await w.req('island.jump', { id: 'x:item:item-1' })
+    assert.deepEqual(hints, ['#11：已打开 alpha。请在右侧「主页」→「需要你处理」里点开「#11 去掉前缀」', '#11：alpha 已经打开。请在右侧「主页」→「需要你处理」里点开「#11 去掉前缀」'])
     main.testDeps.hint = undefined
   })
   test('opening an item clears its 新 marker and keeps the prompt', async () => {
@@ -637,7 +652,7 @@ test('real helper: ↗ in the open list, then the tab hint: the list closes and 
   const narrow = (await state()).pillW
   b.send({ type: 'debug_act', action: 'jump', data: { id: 'x:item:1' } }) // ↗: activates Orca, closes the list
   await tick(60)
-  const hint = '已打开 atlas，请在右侧切到「主页」查看待你决定'
+  const hint = '#12：已打开 atlas。请在右侧「主页」→「需要你处理」里点开「#12 Release v2.3」'
   b.send({ type: 'hint', text: hint }) // what the worker sends right after the jump
   await tick(700)
   const s = await state()
@@ -702,4 +717,21 @@ test('real helper: the ⏻ and ⚙ header icons are the same optical size', { sk
   const h = (r: number[]) => r[3] - r[1]
   assert.ok(Math.abs(h(gear) - h(power)) <= 1, `ink heights ${h(power)} vs ${h(gear)} pt`)
   b.stop()
+})
+
+test('openUrl accepts the bot link with ?botItem= and nothing looser', async () => {
+  const opened: string[] = []
+  const before = main.testDeps.open
+  main.testDeps.open = (u) => opened.push(u)
+  const host = mockHost({ settings: { helper: 'off' }, results: { 'workspace.list': { workspaces: [], truncated: false }, 'agents.list': { agents: [] } } })
+  const w = await mountWorker(main, { host })
+  try {
+    await tick(60)
+    const bot = (url: string) => w.request('island.helperMsg' as never, { type: 'open_url_test', url } as never)
+    for (const u of ['orca://bot/abc-1', 'orca://bot/abc-1?botItem=item-9', 'orca://bot/abc?botItem=123', 'orca://bot/abc?botItem=a&x=1', 'orca://bot/abc?other=1', 'https://example.invalid', 'orca://bot/../x']) await bot(u)
+    assert.deepEqual(opened, ['orca://bot/abc-1', 'orca://bot/abc-1?botItem=item-9'])
+  } finally {
+    main.testDeps.open = before ?? (() => {})
+    await w.deactivate()
+  }
 })

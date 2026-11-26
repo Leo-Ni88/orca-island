@@ -1,4 +1,4 @@
-// Orca Island helper. Single file, SwiftUI in one fixed transparent panel per screen; no dependencies.
+// Island for Orca helper. Single file, SwiftUI in one fixed transparent panel per screen; no dependencies.
 // Motion: the window never animates. One shape morphs pill -> peek -> list -> detail.
 // Build: swiftc -O -o helper/bin/island-helper helper/island.swift   (arm64 linker ad-hoc signs it)
 // Protocol: JSON Lines over stdio, v:1 (docs/architecture.md). stdout = protocol only; logs -> stderr.
@@ -195,7 +195,7 @@ final class Builder {
         l.options = d.options.map { min(62, height(d.answerable ? "\($0.n). \($0.label)" : $0.label, 12, .medium, 392) + 13) }
         // Explained, never silently missing: Orca-only questions and the switched-off case show a greyed input.
         l.input = d.answerable && d.textOption != nil ? 62 : (d.inputKind == "orca" || d.inputKind == "off") ? 58 : 0
-        l.note = d.answerable || !d.note.isEmpty || !d.asks.isEmpty ? 16 : 0
+        l.note = d.answerable || !d.note.isEmpty || !d.asks.isEmpty ? (d.note.count > 30 ? 32 : 16) : 0
         let askParts = zip(l.askTitles, l.asks).flatMap { [$0] + $1 }
         let parts = [l.title + 16, l.question] + askParts + l.options + [l.input, l.note, 30]
         l.total = parts.filter { $0 > 0 }.reduce(0, +) + CGFloat(parts.filter { $0 > 0 }.count - 1) * 8 + 14
@@ -321,6 +321,8 @@ struct Geo: Equatable {
     var barH: CGFloat, notchW: CGFloat, maxH: CGFloat, canvasW: CGFloat
     var notch: Bool { notchW > 0 }
     static let openW: CGFloat = 440
+    /// The widest the pill gets: a jump hint naming one item and the steps to it.
+    static let hintW: CGFloat = 600
     var openWidth: CGFloat { max(Geo.openW, notchW + 220) }
     /// List height without the screen cap applied to the bar and chrome.
     func listHeight(_ model: Model) -> CGFloat { min(maxH, max(barH + 108, barH + 68 + model.listH)) }
@@ -339,7 +341,8 @@ struct Geo: Equatable {
     }
     func hintExtra(_ h: String) -> CGFloat {
         let w = (h as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: 12, weight: .semibold)]).width
-        return max(0, min(w + 60 - (notch ? 220 : 320), openWidth - (notch ? notchW + 220 : 320)))
+        // Up to 600 pt (the hint names an item and the steps to it); longer ones scale down slightly.
+        return max(0, min(w + 60 - (notch ? 220 : 320), max(Geo.hintW, notchW + 220) - (notch ? notchW + 220 : 320)))
     }
     func radius(_ m: Mode) -> CGFloat { m == .pill || m == .hidden ? (notch ? 12 : barH / 2) : 22 }
 }
@@ -403,7 +406,7 @@ struct IslandView: View {
 
     var openBar: some View {
         HStack {
-            Text("Orca Island").font(.system(size: 11, weight: .semibold)).dim(0.6)
+            Text("Island for Orca").font(.system(size: 11, weight: .semibold)).dim(0.6)
             Spacer()
             Text("收起").font(.system(size: 11)).dim(0.6)
         }
@@ -661,7 +664,7 @@ struct SettingsView: View {
                     .onTapGesture { act("toggle_capture", [:]) }
             }
             Spacer(minLength: 0)
-            Text("其他设置：Orca 设置 → 插件 → Orca Island → ⋯ → 详情").font(.system(size: 10.5)).dim(0.5)
+            Text("其他设置：Orca 设置 → 插件 → Island for Orca → ⋯ → 详情").font(.system(size: 10.5)).dim(0.5)
         }.padding(.horizontal, 14).padding(.bottom, 12)
     }
 }
@@ -738,7 +741,7 @@ struct DetailView: View, Equatable {
                         .onTapGesture { if !draft.wrappedValue.isEmpty && !sending { act("answer", ["id": d.id, "option": n, "signature": d.signature, "text": draft.wrappedValue]) } }
                 }.frame(height: lay.input)
             }
-            if lay.note > 0 { Text(status.isEmpty ? d.note : status).font(.system(size: 11)).dim(0.7).lineLimit(1).frame(height: lay.note) }
+            if lay.note > 0 { Text(status.isEmpty ? d.note : status).font(.system(size: 11)).dim(0.7).lineLimit(2).frame(maxWidth: .infinity, alignment: .leading).frame(height: lay.note) }
             Text(d.primary).font(.system(size: 12, weight: .semibold)).frame(maxWidth: .infinity, minHeight: 30, maxHeight: 30)
                 .background(RoundedRectangle(cornerRadius: 8).fill(d.answerable ? Color.white.opacity(0.12) : Color.orange.opacity(0.85)))
                 .contentShape(Rectangle()).onTapGesture { act("jump", ["id": d.id]) }
@@ -785,7 +788,7 @@ final class ScreenIsland {
         if nh > 0, !forcePill, let l = screen.auxiliaryTopLeftArea, let r = screen.auxiliaryTopRightArea {
             notchW = f.width - l.width - r.width; barH = nh; x = f.minX + l.width + notchW / 2
         }
-        geo = Geo(barH: barH, notchW: notchW, maxH: (f.height * 0.6).rounded(), canvasW: max(Geo.openW, notchW + 220) + 60)
+        geo = Geo(barH: barH, notchW: notchW, maxH: (f.height * 0.6).rounded(), canvasW: max(Geo.hintW, notchW + 220) + 60)
         let h = geo.maxH + 20
         panel = IslandPanel(contentRect: NSRect(x: x - geo.canvasW / 2, y: offscreen ? -20000 : f.maxY - h - (notchW > 0 ? 0 : 1), width: geo.canvasW, height: h),
                             styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
@@ -880,7 +883,7 @@ final class Island: NSObject, NSMenuDelegate {
         guard !warmed else { return }
         warmed = true
         var d = Detail()
-        d.title = "Orca Island"; d.source = "·"; d.question = "·"; d.note = "·"; d.primary = "打开 Orca"
+        d.title = "Island for Orca"; d.source = "·"; d.question = "·"; d.note = "·"; d.primary = "打开 Orca"
         setDetail(d)
     }
 

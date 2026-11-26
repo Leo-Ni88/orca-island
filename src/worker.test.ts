@@ -117,7 +117,7 @@ test('statusText and notificationFor', () => {
     { ids: ['a', 'b', 'c'], kind: 'batch', priority: 2, peek: true, peekIds: [], ttlMs: 4000, reason: 'new', counts: { needs_you: 0, failed: 0, done: 3, interrupted: 0 } },
     ['a', 'b', 'c'].map((id) => ({ id, title: `T${id}`, state: 'done' }) as never)
   )
-  assert.equal(n.title, 'Orca Island: 3 个完成')
+  assert.equal(n.title, 'Island for Orca: 3 个完成')
 })
 
 for (const kind of ['swift', 'jxa'] as const) {

@@ -355,7 +355,7 @@ def hero(path, frames):
     img.alpha_composite(shade, (0, H - 260))
     img = img.convert('RGB')
     d = ImageDraw.Draw(img)
-    d.text((W // 2, H - 150), 'Orca Island', font=font(64, bold=True), fill=(255, 255, 255), anchor='mm')
+    d.text((W // 2, H - 150), 'Island for Orca', font=font(64, bold=True), fill=(255, 255, 255), anchor='mm')
     d.text((W // 2, H - 85), 'See which agents need you, at a glance.', font=font(28), fill=(236, 236, 246), anchor='mm')
     img.save(path, optimize=True)
 
@@ -396,7 +396,7 @@ def cover(frame, path):
     img.alpha_composite(shade, (0, H - 300))
     img = img.convert('RGB')
     d = ImageDraw.Draw(img)
-    d.text((80, H - 200), 'Orca Island', font=font(68, bold=True), fill=(255, 255, 255))
+    d.text((80, H - 200), 'Island for Orca', font=font(68, bold=True), fill=(255, 255, 255))
     d.text((84, H - 112), 'See which agents need you, at a glance.', font=font(30), fill=(236, 236, 246))
     img.save(path, optimize=True)
 

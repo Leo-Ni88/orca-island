@@ -1,4 +1,4 @@
-# Orca Island
+# Island for Orca
 
 **See which agents need you, at a glance.** A notch-style island for [Orca](https://orca.dev) on macOS. It tells you which agents are waiting on you and which finished or failed, and takes you straight to them.
 
@@ -6,7 +6,7 @@ Community plugin, not made or endorsed by the Orca team.
 
 [中文说明](#中文说明)
 
-![Orca Island: a prompt that needs you, the list, and the prompt opened in the island](media/cover.png)
+![Island for Orca: a prompt that needs you, the list, and the prompt opened in the island](media/cover.png)
 
 ![Peek, open the list, open a prompt, answer it, and the agent goes back to work](media/gifs/answer.gif)
 
@@ -52,6 +52,19 @@ A small glyph shows what each row is: a terminal, a bot, or Orca itself. Hoverin
 |---|---|---|
 | ![](media/screenshots/detail-prompt.png) | ![](media/screenshots/detail-bot.png) | ![](media/readme/hint.png) |
 
+### Known limitations
+
+These come from Orca, not the island. They go away once Orca adds the APIs: see [Needs Orca](docs/roadmap.md#needs-orca).
+
+- **Jumping to a bot's "needs you" item opens the bot, not the item.**
+  - Orca doesn't yet let a plugin open one item, so if that bot is already open, nothing visible changes.
+  - The island shows the item's number and where to click instead: 「主页」 → 「需要你处理」 → `#61 …`.
+  - For the same reason, bot items are answered in Orca, not in the island.
+  - Upstream: [stablyai/orca#48010](https://github.com/stablyai/orca/issues/48010) and [stablyai/orca#49398](https://github.com/stablyai/orca/pull/49398).
+- **The right sidebar's tab isn't switched for you.**
+  - For bot items and chats, Orca keeps whichever right-sidebar tab was open last (主页, 聊天, or a plugin panel). Plugins can't choose it.
+  - The island tells you which tab to open and, for chats, which chat.
+
 ### Answer from the island (opt-in)
 
 Answering is off by default. To use it, turn it on in ⚙ and confirm. You can then pick an option or type a reply to a Claude Code prompt without leaving what you are doing.
@@ -78,7 +91,7 @@ Turn the island off for an hour, until 8 tomorrow morning, or until you turn it 
 
 While it is off there is no island, sound, notification or hotkey, and terminals are neither read nor typed into. It keeps track in the background, though.
 
-When it is off, Orca's status bar reads 「Island 已关闭」. Press that, or use the 「启用 Orca Island」 setting, to turn it back on. When it comes back you get one quiet summary of what changed meanwhile (for example 「关闭的 25 分钟里：2 个问题在等你回答…」).
+When it is off, Orca's status bar reads 「Island 已关闭」. Press that, or use the 「启用 Island」 setting, to turn it back on. When it comes back you get one quiet summary of what changed meanwhile (for example 「关闭的 25 分钟里：2 个问题在等你回答…」).
 
 ![⏻ in the list: off for 1 hour, until 8 tomorrow, or until turned on](media/readme/power.png)
 
@@ -97,7 +110,7 @@ Requirements:
 - Orca 1.4.259 or newer
 - the Xcode command-line tools (`xcode-select --install`). Without them a simpler island (the pill only) is used.
 
-Install Orca Island from the Orca plugin directory, or from the command line:
+Install Island for Orca from the Orca plugin directory, or from the command line:
 
 ```sh
 orca plugin install Leo-Ni88/orca-island
@@ -109,11 +122,11 @@ On first start the plugin compiles its small Swift helper on your Mac. This take
 
 ## Settings
 
-In Orca's plugin settings, under Orca Island:
+In Orca's plugin settings, under Island for Orca:
 
 | Setting | Default | |
 |---|---|---|
-| 启用 Orca Island (enabled) | on | The off switch; also turns it back on |
+| 启用 Island (enabled) | on | The off switch; also turns it back on |
 | Island 程序 (helper) | Swift | Swift, JXA (pill only), or off (status bar and notifications only) |
 | 提醒强度 (alert level) | 标准 | 安静: only needs-you and failures. 全部: also short turns |
 | 显示位置 (where) | 自动 | Notch or pill, menu-bar icon only, or both |
@@ -123,7 +136,7 @@ In Orca's plugin settings, under Orca Island:
 | 全局快捷键 ⌃⌥⇧U (hotkey) | on | Jump to the next row that needs you |
 | 录屏和截图时隐藏 (hide from capture) | on | Best effort |
 | 显示 Orca 的待你决定 (Orca decisions) | on | Bot questions, plugin approvals, failed automations, gates (via the `orca` CLI) |
-| orca 命令行路径 (orcaCli) | empty | Path to the `orca` CLI; empty uses the one inside Orca.app |
+| 命令行工具 orca 的路径 (orcaCli) | empty | Path to the `orca` CLI; empty uses the one inside Orca.app |
 | 记录事件 (record) | off | Stores raw agent and workspace events in plugin storage, for bug reports |
 | 允许在 Island 中直接回答 (answering) | **off** | Also needs your confirmation in the island's ⚙ |
 
@@ -148,7 +161,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [docs/architecture.md](docs/architecture
 
 ## 中文说明
 
-Orca Island 是 [Orca](https://orca.dev) 的 macOS 插件。它在屏幕顶部显示一个刘海式的小岛：哪个 agent 在等你、哪个完成了、哪个失败了，一眼就能看到，并且能直接跳过去。
+Island for Orca 是 [Orca](https://orca.dev) 的 macOS 插件。它在屏幕顶部显示一个刘海式的小岛：哪个 agent 在等你、哪个完成了、哪个失败了，一眼就能看到，并且能直接跳过去。
 
 社区插件，不是 Orca 团队制作，也未经其认可。界面目前只有中文；封面图与语言无关。
 
@@ -167,6 +180,15 @@ Orca Island 是 [Orca](https://orca.dev) 的 macOS 插件。它在屏幕顶部�
   - 点一行，在小岛里查看问题、选项和来源。
   - 要跳到 Orca：点这一行的 **↗**、打开后的按钮、或点预览；也可以在任何地方按 **⌃⌥⇧U** 跳到下一条等你的事。
   - 终端行会直接跳到那个终端。Bot 的具体标签页 Orca 还不能直接打开，小岛会告诉你去哪里找，例如「请在右侧切到『主页』」。
+- **已知限制**：来自 Orca，不是小岛本身的问题。Orca 提供相应接口后就会消失，见 [Needs Orca](docs/roadmap.md#needs-orca)。
+  - **跳到某个 bot 的「需要你处理」事项时，只能打开这个 bot，打不开那一项。**
+    - Orca 目前不允许插件直接打开某一项；如果这个 bot 已经打开，跳转后屏幕上看不到变化。
+    - 小岛会显示事项编号和点击路径：「主页」→「需要你处理」→「#61 …」。
+    - 同样的原因，bot 的问题需要在 Orca 里回答。
+    - 上游进展：[stablyai/orca#48010](https://github.com/stablyai/orca/issues/48010)、[stablyai/orca#49398](https://github.com/stablyai/orca/pull/49398)。
+  - **不会自动切换右侧边栏的标签页。**
+    - 对 bot 事项和聊天，Orca 会停在上次打开的那个标签（主页、聊天或某个插件面板），插件无法选择。
+    - 小岛会告诉你该切到哪个标签；如果是聊天，还会告诉你是哪个聊天。
 - **在小岛里直接回答（默认关闭）**
   - 在 ⚙ 里打开并确认后，可以直接选择选项或输入回复，回答 Claude Code 的提示。
   - 输入之前，插件会先确认终端上的提示仍是你看到的那一个。
@@ -180,7 +202,7 @@ Orca Island 是 [Orca](https://orca.dev) 的 macOS 插件。它在屏幕顶部�
   - 可以关 1 小时、关到明早 8 点，或一直关到你打开为止。
   - 入口有三个：列表里的 ⏻、菜单栏图标，以及 Orca 状态栏的暂停按钮（关 1 小时）。
   - 关闭期间：没有小岛、声音、通知和快捷键，也不读写任何终端；后台仍然记录状态。
-  - 状态栏会显示「Island 已关闭」，点它或在设置里打开「启用 Orca Island」即可恢复。
+  - 状态栏会显示「Island 已关闭」，点它或在设置里打开「启用 Island」即可恢复。
   - 恢复时只显示一条安静的摘要，例如「关闭的 25 分钟里：2 个问题在等你回答…」，只算这段时间里新发生的事。
 - **不打扰**
   - 锁屏时保持安静，回来后显示一条摘要，例如「你离开的 1 小时 10 分钟里：1 个任务失败…」；点它直接跳到这些新行。
@@ -206,11 +228,11 @@ Orca 会列出插件需要的权限（见 [SECURITY.md](SECURITY.md)），由你
 
 ### 设置
 
-在 Orca 的插件设置里找到 Orca Island：
+在 Orca 的插件设置里找到 Island for Orca：
 
 | 设置 | 默认 | 说明 |
 |---|---|---|
-| 启用 Orca Island | 开 | 总开关，也可以用来重新打开 |
+| 启用 Island | 开 | 总开关，也可以用来重新打开 |
 | Island 程序 | Swift | Swift、JXA（只有药丸）或关闭（只用状态栏和通知） |
 | 提醒强度 | 标准 | 安静：只提醒需要你和失败；全部：短任务也提醒 |
 | 显示位置 | 自动 | 刘海或药丸、仅菜单栏图标，或两者都有 |
@@ -220,7 +242,7 @@ Orca 会列出插件需要的权限（见 [SECURITY.md](SECURITY.md)），由你
 | 全局快捷键 ⌃⌥⇧U | 开 | 跳到下一条需要你处理的事 |
 | 录屏和截图时隐藏 | 开 | 尽力而为 |
 | 显示 Orca 的待你决定 | 开 | 通过 `orca` 命令行读取 bot 问题、插件授权、失败的自动化、编排关卡 |
-| orca 命令行路径 | 空 | 留空时使用 Orca.app 自带的 |
+| 命令行工具 orca 的路径 | 空 | 留空时使用 Orca.app 自带的 |
 | 记录事件 | 关 | 把原始的 agent 和工作区事件存入插件存储，用于报告问题 |
 | 允许在 Island 中直接回答 | **关** | 开启时还需要在小岛的 ⚙ 里确认 |
 

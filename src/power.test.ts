@@ -93,7 +93,7 @@ describe('turning it off', () => {
       else assert.ok(Math.abs(stored.until! - main.offUntil(choice, t0)!) < 1000, 'absolute time')
       assert.match(w.status().text, /^Island 已关闭/)
       assert.equal(w.status().tone, 'neutral')
-      assert.equal(w.host.data().settings.enabled, false, '启用 Orca Island follows')
+      assert.equal(w.host.data().settings.enabled, false, '启用 Island follows')
     })
   }
 
@@ -193,7 +193,7 @@ describe('coming back on', () => {
 
   test('setting and switch stay in sync both ways', async () => {
     const w = await up()
-    // The person flips 启用 Orca Island in Orca's settings (the worker hears it through settings.onDidChange).
+    // The person flips 启用 Island in Orca's settings (the worker hears it through settings.onDidChange).
     await w.req('island.helperMsg', { type: 'setting_test', key: 'enabled', value: false })
     assert.equal((await w.req('island.items')).power.on, false, 'setting off -> island off')
     assert.match(w.status().text, /^Island 已关闭$/, 'until turned on')
@@ -302,7 +302,7 @@ describe('never locked out', () => {
     const n = w.host.callsOf('notifications.show') as { title: string; body: string }[]
     assert.equal(n.length, 1, 'exactly one notification')
     assert.equal(n[0].title, 'Island 已关闭')
-    assert.match(n[0].body, /点状态栏的「Island 已关闭」或在插件设置里打开「启用 Orca Island」/)
+    assert.match(n[0].body, /点状态栏的「Island 已关闭」或在插件设置里打开「启用 Island」/)
     await w.req('island.power', { on: false, choice: 'forever' }) // already off: no second one
     assert.equal(w.host.callsOf('notifications.show').length, 1)
   })

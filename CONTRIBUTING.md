@@ -1,4 +1,4 @@
-# Contributing to Orca Island
+# Contributing to Island for Orca
 
 Thanks for helping. Bug reports, ideas and pull requests are all welcome.
 

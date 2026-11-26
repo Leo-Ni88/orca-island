@@ -1,4 +1,4 @@
-// Session state machine for Orca Island (docs/architecture.md, "State machine").
+// Session state machine for Island for Orca (docs/architecture.md, "State machine").
 // Pure: no Orca APIs, clock and timers are injected, so it unit-tests deterministically.
 //
 // Rules learned from recorded agent sessions (docs/architecture.md):

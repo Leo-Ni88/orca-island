@@ -1,4 +1,4 @@
-// Orca Island helper, JXA fallback (used when the Xcode Command Line Tools are missing). Run: osascript -l JavaScript helper/island.jxa.js
+// Island for Orca helper, JXA fallback (used when the Xcode Command Line Tools are missing). Run: osascript -l JavaScript helper/island.jxa.js
 // Same JSON Lines protocol as island.swift (subset: hello/upsert/remove/ping/quit -> ready/pong/clicked/error).
 ObjC.import('Cocoa')
 ObjC.import('stdlib')
