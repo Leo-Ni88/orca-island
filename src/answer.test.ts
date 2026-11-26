@@ -120,7 +120,13 @@ describe('parsing recorded Claude Code 2.1.322 screens', () => {
       ['key sk_test_FAKEFAKEFAKEFAKE0000 and rk_live_FAKEFAKEFAKEFAKE0000', 'key [redacted] and [redacted]'],
       ['npm config set //registry.example.invalid/:_authToken npm_FAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE00', 'npm config set //registry.example.invalid/:_authToken [redacted]'],
       ['token npm_FAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE00 here', 'token [redacted] here'],
-      ['echo "password: Fake-1234"', 'echo "password: [redacted]"']
+      ['echo "password: Fake-1234"', 'echo "password: [redacted]"'],
+      ['docker login -u ci -p Fake-Pass-1 registry.example.invalid', 'docker login -u ci -p [redacted] registry.example.invalid'],
+      ['docker login --username ci --password Fake-Pass-1 registry.example.invalid', 'docker login --username ci --password [redacted] registry.example.invalid'],
+      ['curl -X POST https://hooks.slack.com/services/T0FAKE000/B0FAKE000/FAKEfakeFAKEfake0000 -d @msg.json', 'curl -X POST https://hooks.slack.com/services/[redacted] -d @msg.json'],
+      ['-----BEGIN RSA PRIVATE KEY-----\nFAKEFAKEFAKEFAKE0000\nFAKEFAKE0000\n-----END RSA PRIVATE KEY-----\ndone', '[redacted private key]\ndone'],
+      ['echo "-----BEGIN PRIVATE KEY----- FAKEFAKEFAKE0000 FAKE0000 -----END PRIVATE KEY-----" > key.pem', 'echo "[redacted private key]" > key.pem'],
+      ['key: -----BEGIN OPENSSH PRIVATE KEY----- FAKEFAKEFAKE0000', 'key: [redacted private key]']
     ]
     for (const [i, o] of cases) assert.equal(redactSecrets(i), o, i)
   })
@@ -139,7 +145,12 @@ describe('parsing recorded Claude Code 2.1.322 screens', () => {
       'the token: none',
       'mysql -p app',
       'run the tests, no secrets here',
-      'skip-ci and sk-short'
+      'skip-ci and sk-short',
+      'docker run -p 8080:80 web-app',
+      'docker login registry.example.invalid && docker run -p 8080:80 web-app',
+      '-----BEGIN CERTIFICATE----- FAKEFAKEFAKE0000 -----END CERTIFICATE-----',
+      '-----BEGIN PUBLIC KEY----- FAKEFAKEFAKE0000 -----END PUBLIC KEY-----',
+      'see https://api.slack.com/messaging/webhooks'
     ])
       assert.equal(redactSecrets(t), t, t)
   })
