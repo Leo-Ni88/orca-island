@@ -38,6 +38,7 @@ const cleanLabel = (s: string): string => s.replace(/\s+·\s+.*$/, (m) => (/auto
 
 /**
  * Masks API keys, tokens and passwords in text shown outside the terminal. Rules run in order:
+ * 0. Whole PEM private-key blocks, Slack webhook paths and `docker login -p` values.
  * 1. Credentials inside URLs, command-line password flags, JSON values and env-style assignments.
  * 2. `label: value` / `label=value`: always for clear key names (api_key, client_secret, …); for the
  *    loose words (password, secret, token, …) only when the value looks like a secret (quoted, has a
@@ -52,6 +53,12 @@ const secretish = (v: string): boolean => /^["']/.test(v) || /[0-9]/.test(v) || 
 export function redactSecrets(s: string): string {
   return (
     s
+      // PEM private-key blocks, also flattened onto one line (or cut off before the END line); public keys and certificates stay
+      .replace(/-----BEGIN ((?:[A-Z0-9]+ )*)PRIVATE KEY-----[\s\S]*?(?:-----END \1PRIVATE KEY-----|$)/g, '[redacted private key]')
+      // Slack incoming webhooks: keep the host, mask the path
+      .replace(/\b(https?:\/\/hooks\.slack\.com\/services\/)[^\s"'<>]+/gi, `$1${R}`)
+      // docker login -p PASS (only after docker login, so docker run -p 8080:80 stays)
+      .replace(/(\bdocker\s+login\b[^\n|;&]*?\s-p\s+)(?:"[^"]*"|'[^']*'|[^\s"']+)/g, `$1${R}`)
       // scheme://user:PASS@host
       .replace(/\b([a-z][a-z0-9+.-]*:\/\/[^\s:@/]+:)[^\s@/]+@/gi, `$1${R}@`)
       // curl -u user:PASS / --user user:PASS (keep the user)
