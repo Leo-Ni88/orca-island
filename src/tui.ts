@@ -37,20 +37,44 @@ const QUESTION_FOOTER = /^\s*Enter to select · /
 const cleanLabel = (s: string): string => s.replace(/\s+·\s+.*$/, (m) => (/auto mode|shift\+tab/.test(m) ? m : '')).trim()
 
 /**
- * Masks API keys, tokens and passwords in text shown outside the terminal.
- * Labelled values first (api_key=..., password: "...", token=...), then Bearer
- * tokens, then known key prefixes (sk-, ghp_, github_pat_, AKIA, xox*).
- * Anything not matching a pattern is left alone, so ordinary text is unchanged.
+ * Masks API keys, tokens and passwords in text shown outside the terminal. Rules run in order:
+ * 1. Credentials inside URLs, command-line password flags, JSON values and env-style assignments.
+ * 2. `label: value` / `label=value`: always for clear key names (api_key, client_secret, …); for the
+ *    loose words (password, secret, token, …) only when the value looks like a secret (quoted, has a
+ *    digit or a symbol, or is 12+ characters), so prose like "set the password: later" stays.
+ * 3. Bearer tokens and known key prefixes (sk-…, gh*_, github_pat_, AKIA, xox*).
+ * Anything not matching a pattern is left alone.
  */
+const R = '[redacted]'
+const KEYNAME = '(?:api[_-]?key|apikey|access[_-]?key(?:[_-]?id)?|secret[_-]?access[_-]?key|access[_-]?token|auth[_-]?token|refresh[_-]?token|id[_-]?token|client[_-]?secret|private[_-]?key)'
+const LOOSE = '(?:secret|password|passwd|pwd|token)'
+const secretish = (v: string): boolean => /^["']/.test(v) || /[0-9]/.test(v) || /[^A-Za-z]/.test(v) || v.length >= 12
 export function redactSecrets(s: string): string {
-  return s
-    .replace(/\b((?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|secret|password|passwd|pwd)\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, '$1[redacted]')
-    .replace(/\bBearer\s+[A-Za-z0-9._~+\/-]+/gi, 'Bearer [redacted]')
-    .replace(/\bsk-[A-Za-z0-9]{20,}\b/g, '[redacted]')
-    .replace(/\bghp_[A-Za-z0-9]{20,}\b/g, '[redacted]')
-    .replace(/\bgithub_pat_[A-Za-z0-9_]{20,}\b/g, '[redacted]')
-    .replace(/\bAKIA[0-9A-Z]{16}\b/g, '[redacted]')
-    .replace(/\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g, '[redacted]')
+  return (
+    s
+      // scheme://user:PASS@host
+      .replace(/\b([a-z][a-z0-9+.-]*:\/\/[^\s:@/]+:)[^\s@/]+@/gi, `$1${R}@`)
+      // -pPASS (mysql), --password=PASS, --password PASS
+      .replace(/(\s-p)(?=\S)(?!assword)[^\s'"]+/g, `$1${R}`)
+      .replace(/(--password(?:=|\s+))(?:"[^"]*"|'[^']*'|[^\s]+)/gi, `$1${R}`)
+      // "password": "with spaces" (JSON, either quote style for the key)
+      .replace(/(["'](?:[A-Za-z0-9_-]*(?:password|passwd|secret|token|api[_-]?key|apikey|private[_-]?key)[A-Za-z0-9_-]*)["']\s*:\s*)("[^"]*"|'[^']*')/gi, `$1"${R}"`)
+      // NAME=value where NAME ends in a secret word (env style)
+      .replace(/\b([A-Za-z_][A-Za-z0-9_]*(?:PASSWORD|PASSWD|TOKEN|SECRET|API_KEY|APIKEY|ACCESS_KEY|PRIVATE_KEY)=)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, `$1${R}`)
+      // aws_secret_access_key <value> (space, as in ~/.aws/credentials or CLI output)
+      .replace(/\b(aws_secret_access_key\s+)(?![:=])([A-Za-z0-9/+=]{16,})/gi, `$1${R}`)
+      // clear key names: always
+      .replace(new RegExp(`\\b(${KEYNAME}\\s*[:=]\\s*)(?!\\[redacted\\])(?:"[^"]*"|'[^']*'|[^\\s,;]+)`, 'gi'), `$1${R}`)
+      // loose words: only a secret-looking value
+      .replace(new RegExp(`\\b(${LOOSE}\\s*[:=]\\s*)(?!\\[redacted\\])("[^"]*"|'[^']*'|[^\\s,;]+)`, 'gi'), (m, label: string, v: string) => (secretish(v) ? label + R : m))
+      .replace(/\bBearer\s+[A-Za-z0-9._~+\/-]+/gi, `Bearer ${R}`)
+      // sk-…, including sk-ant-… and sk-proj-… (dashes and underscores inside)
+      .replace(/\bsk-[A-Za-z0-9_-]{20,}/g, R)
+      .replace(/\bgh[pousr]_[A-Za-z0-9]{20,}\b/g, R)
+      .replace(/\bgithub_pat_[A-Za-z0-9_]{20,}\b/g, R)
+      .replace(/\bAKIA[0-9A-Z]{16}\b/g, R)
+      .replace(/\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g, R)
+  )
 }
 
 export function parsePrompt(lines: readonly string[]): TuiPrompt | null {
