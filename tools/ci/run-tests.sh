@@ -1,5 +1,5 @@
 #!/bin/sh
-# Runs the plugin's tests with plain Node (24 or newer, for --experimental-transform-types), no Orca app.
+# Runs the plugin's tests with plain Node (24.22 or newer, for --experimental-transform-types), no Orca app.
 # Tests that mount the worker are reported as skipped; run `orca plugin test .` for those.
 set -e
 cd "$(dirname "$0")/../.."

@@ -4,7 +4,7 @@
   "id": "agent-island",
   "publisher": "leo-ni88",
   "name": "Orca Island",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A notch-style island for Orca on macOS: see which agents need you, finished or failed at a glance, and jump straight to them.",
   "author": {
     "name": "Leo-Ni88",

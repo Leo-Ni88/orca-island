@@ -90,6 +90,59 @@ describe('parsing recorded Claude Code 2.1.322 screens', () => {
     assert.equal(redactSecrets('key sk-EXAMPLE00000000000000000000 here'), 'key [redacted] here')
     assert.equal(redactSecrets('run the tests, no secrets here'), 'run the tests, no secrets here')
   })
+  test('redactSecrets: more key formats (all values made up)', () => {
+    const cases: [string, string][] = [
+      ['key sk-ant-api03-FAKEFAKEFAKEFAKEFAKE_0000 here', 'key [redacted] here'],
+      ['OPENAI=sk-proj-FAKE_fake-0000000000000000000', 'OPENAI=[redacted]'],
+      ['export DB_PASSWORD=hunter2', 'export DB_PASSWORD=[redacted]'],
+      ['GITHUB_TOKEN=abc123 npm publish', 'GITHUB_TOKEN=[redacted] npm publish'],
+      ['STRIPE_SECRET="fake secret value"', 'STRIPE_SECRET=[redacted]'],
+      ['MY_API_KEY=fakekey000 MY_APIKEY=fakekey111', 'MY_API_KEY=[redacted] MY_APIKEY=[redacted]'],
+      ['AWS_ACCESS_KEY=FAKEACCESS0000 SSH_PRIVATE_KEY=fakepk', 'AWS_ACCESS_KEY=[redacted] SSH_PRIVATE_KEY=[redacted]'],
+      ['my_passwd=FakePass1 x', 'my_passwd=[redacted] x'],
+      ['git clone https://deploy:FakePass123@git.example.invalid/repo.git', 'git clone https://deploy:[redacted]@git.example.invalid/repo.git'],
+      ['psql postgres://app:fake-pw@db.example.invalid:5432/app', 'psql postgres://app:[redacted]@db.example.invalid:5432/app'],
+      ['mysql -u root -pFakePass1 app', 'mysql -u root -p[redacted] app'],
+      ['tool --password=FakePass1 --user x', 'tool --password=[redacted] --user x'],
+      ['tool --password FakePass1 --user x', 'tool --password [redacted] --user x'],
+      ['token gho_FAKEFAKEFAKEFAKEFAKE0000', 'token [redacted]'],
+      ['ghs_FAKEFAKEFAKEFAKEFAKE0000 ghu_FAKEFAKEFAKEFAKEFAKE0000 ghr_FAKEFAKEFAKEFAKEFAKE0000', '[redacted] [redacted] [redacted]'],
+      ['aws_secret_access_key FAKEfakeFAKEfake/0000+fakeFAKE', 'aws_secret_access_key [redacted]'],
+      ['{"password": "fake pass with spaces", "user": "x"}', '{"password": "[redacted]", "user": "x"}'],
+      ['{"apiToken": "fake"}', '{"apiToken": "[redacted]"}'],
+      ['client_secret: abc', 'client_secret: [redacted]'],
+      ['password: "x"', 'password: [redacted]'],
+      ['curl -u admin:hunter2 https://api.example.invalid', 'curl -u admin:[redacted] https://api.example.invalid'],
+      ['curl --user "deploy:Fake Pass 1" https://x.invalid', 'curl --user "deploy:[redacted]" https://x.invalid'],
+      ['curl --user=deploy:FakePass1 https://x.invalid', 'curl --user=deploy:[redacted] https://x.invalid'],
+      ['redis-cli -a FakeRedisPass1 ping', 'redis-cli -a [redacted] ping'],
+      ['export STRIPE_SECRET_KEY=sk_live_FAKEFAKEFAKEFAKE0000', 'export STRIPE_SECRET_KEY=[redacted]'],
+      ['key sk_test_FAKEFAKEFAKEFAKE0000 and rk_live_FAKEFAKEFAKEFAKE0000', 'key [redacted] and [redacted]'],
+      ['npm config set //registry.example.invalid/:_authToken npm_FAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE00', 'npm config set //registry.example.invalid/:_authToken [redacted]'],
+      ['token npm_FAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE00 here', 'token [redacted] here'],
+      ['echo "password: Fake-1234"', 'echo "password: [redacted]"']
+    ]
+    for (const [i, o] of cases) assert.equal(redactSecrets(i), o, i)
+  })
+  test('redactSecrets leaves ordinary text alone', () => {
+    for (const t of [
+      'git checkout fix/passwordless-login',
+      'open src/auth/password_reset.ts',
+      'git show 3f9a1c2e8b7d6a5f4e3d2c1b0a9f8e7d6c5b4a39',
+      'the secret santa list is ready',
+      'set the password: later',
+      'echo "set the password: later"',
+      "echo 'the token: none'",
+      'redis-cli ping',
+      'cargo run -a fast',
+      'npm_config_cache=/tmp/npm',
+      'the token: none',
+      'mysql -p app',
+      'run the tests, no secrets here',
+      'skip-ci and sk-short'
+    ])
+      assert.equal(redactSecrets(t), t, t)
+  })
   test('a prompt excerpt carrying secrets is redacted before it reaches the helper', () => {
     const lines = fx('bash').map((l) =>
       l.replace(

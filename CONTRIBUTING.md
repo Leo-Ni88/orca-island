@@ -8,7 +8,7 @@ You need:
 - macOS 14 or newer
 - [Orca](https://orca.dev) 1.4.259 or newer (it ships the `orca` command-line tool)
 - the Xcode command-line tools (`xcode-select --install`)
-- Node 24, but only for running the tests without Orca
+- Node 24.22 or newer, but only for running the tests without Orca (`--experimental-transform-types`; some earlier 24.x builds reject it)
 
 ```sh
 git clone https://github.com/Leo-Ni88/orca-island
