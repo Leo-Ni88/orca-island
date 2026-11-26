@@ -8,7 +8,7 @@ import AppKit
 import SwiftUI
 import Carbon.HIToolbox
 
-let VERSION = "1.0.0"
+let VERSION = "1.0.1"
 let env = ProcessInfo.processInfo.environment
 
 func log(_ s: String) { FileHandle.standardError.write(("[island] " + s + "\n").data(using: .utf8)!) }

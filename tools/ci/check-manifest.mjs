@@ -1,7 +1,8 @@
 // Manifest checks for CI, where the Orca CLI (`orca plugin validate`) is not available.
 // They cover what most often breaks; `orca plugin validate .` stays the real check before a release.
-import { readFileSync, statSync, existsSync, readdirSync, lstatSync } from 'node:fs'
+import { readFileSync, statSync, existsSync, lstatSync } from 'node:fs'
 import { join } from 'node:path'
+import { execFileSync } from 'node:child_process'
 
 const root = new URL('../..', import.meta.url).pathname
 const m = JSON.parse(readFileSync(join(root, 'orca-plugin.json'), 'utf8'))
@@ -38,17 +39,32 @@ for (const s of shots) {
 }
 need(total <= 8 * 1024 * 1024, 'screenshots at most 8 MB in total')
 
-// The directory refuses executables, archives and symlinks in the plugin tree.
-const walk = (d) => readdirSync(d).flatMap((n) => {
-  const p = join(d, n)
-  if (['.git', 'node_modules', '.orca', 'bin'].includes(n)) return []
-  return lstatSync(p).isDirectory() ? walk(p) : [p]
-})
-for (const f of walk(root)) {
-  const st = lstatSync(f)
+// The directory refuses executables, native modules, archives, bytecode and symlinks. Check what
+// git would ship (the tracked files), by their bytes: only UTF-8 text, PNG, GIF and WEBP may go.
+const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: root }).toString().split('\0').filter(Boolean)
+const isText = (b) => {
+  if (b.includes(0)) return false
+  try {
+    new TextDecoder('utf-8', { fatal: true }).decode(b)
+    return true
+  } catch {
+    return false
+  }
+}
+const isImage = (b) =>
+  (b[0] === 0x89 && b.toString('latin1', 1, 4) === 'PNG') ||
+  b.toString('latin1', 0, 4) === 'GIF8' ||
+  (b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WEBP')
+for (const f of tracked) {
+  const p = join(root, f)
+  const st = lstatSync(p)
   need(!st.isSymbolicLink(), `symlink: ${f}`)
-  need(!/\.(zip|tar|gz|tgz|dylib|node|exe|app)$/.test(f), `archive or binary: ${f}`)
   need(!(st.mode & 0o111), `executable bit: ${f}`)
+  need(!/(^|\/)__pycache__\//.test(f) && !/\.(pyc|pyo|class|o|so|a|jar|wasm|zip|tar|gz|tgz|dylib|node|exe|app)$/.test(f), `bytecode, native or archive: ${f}`)
+  if (!st.isSymbolicLink()) {
+    const b = readFileSync(p)
+    need(isText(b) || isImage(b), `not text, PNG, GIF or WEBP: ${f}`)
+  }
 }
 
 if (errors.length) {

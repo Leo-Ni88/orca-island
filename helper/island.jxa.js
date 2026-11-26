@@ -165,5 +165,5 @@ for (let i = 0; i < $.NSScreen.screens.count; i++) {
   const s = $.NSScreen.screens.objectAtIndex(i)
   scr.push({ hasNotch: s.safeAreaInsets.top > 0, w: s.frame.size.width, h: s.frame.size.height })
 }
-out({ type: 'ready', version: '1.0.0', impl: 'jxa', pid: $.NSProcessInfo.processInfo.processIdentifier, screens: scr })
+out({ type: 'ready', version: '1.0.1', impl: 'jxa', pid: $.NSProcessInfo.processInfo.processIdentifier, screens: scr })
 app.run

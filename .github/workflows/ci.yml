@@ -29,6 +29,9 @@ jobs:
         # run `orca plugin test .` locally for the full suite.
         run: sh tools/ci/run-tests.sh
 
+      - name: No local paths in binary files
+        run: sh tools/ci/scan-binaries.sh
+
       - name: Manifest checks
         # The Orca CLI ships inside Orca.app and cannot be installed headless, so CI
         # cannot run `orca plugin validate`. This checks the rules we can check without it.
