@@ -19,6 +19,7 @@ Ideas, roughly in order. Issues and PRs welcome; items marked *(good first issue
 - **More agents.** Codex, opencode and others report states slightly differently (for example, opencode sends no `outcome` on cancel). Recordings of their status events are welcome.
 - **Configurable hotkey** in settings.
 - **Full JXA fallback** (list and detail), for Macs without the Xcode command-line tools.
+- **Windows/Linux: a real island.** Today these systems get only the status bar and system notifications (see [Platform support](../README.md#platform-support)). *(help wanted)*
 
 ## Needs Orca
 

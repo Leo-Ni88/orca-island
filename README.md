@@ -106,9 +106,10 @@ When it is off, Orca's status bar reads 「Island 已关闭」. Press that, or u
 ## Install
 
 Requirements:
-- macOS 14 or newer
 - Orca 1.4.259 or newer
-- the Xcode command-line tools (`xcode-select --install`). Without them a simpler island (the pill only) is used.
+- for the island: macOS 14 or newer, and the Xcode command-line tools (`xcode-select --install`). Without the tools a simpler island (the pill only) is used.
+
+The plugin also installs on Windows and Linux, with fewer features: see [Platform support](#platform-support).
 
 Install Island for Orca from the Orca plugin directory, or from the command line:
 
@@ -119,6 +120,22 @@ orca plugin install Leo-Ni88/orca-island
 Orca shows the access the plugin asks for (see [SECURITY.md](SECURITY.md)) and asks you to approve it.
 
 On first start the plugin compiles its small Swift helper on your Mac. This takes about 10 seconds, and progress shows in Orca's status bar. The result is cached in `~/Library/Caches/orca-island/`. Nothing prebuilt is downloaded.
+
+### Platform support
+
+**macOS 14+: everything.** The island (from the notch, or a pill at the top), the list, peeks, answering and the hotkey. Building the helper needs the Xcode command-line tools; without them you get the pill only (JXA).
+
+**Windows and Linux: no island.** The plugin installs and runs, but you only get:
+- the summary in Orca's status bar;
+- system notifications for "needs you" and failures (and finished turns, unless 提醒强度 is 安静);
+- the on/off button in the status bar.
+
+Windows and Linux are untested. What we know from the code:
+- The default path to the `orca` CLI is the macOS one. Elsewhere, Orca's `ORCA_CLI_COMMAND` is used if it is set; otherwise set 命令行工具 orca 的路径 (orcaCli) in [Settings](#settings), or bot items and other Orca events won't show.
+- New bot items are noticed right away only in Orca's macOS data folder (or `ORCA_USER_DATA_PATH`, if set). Elsewhere they appear with the 60-second refresh.
+- Jumping to a bot opens an `orca://` link with `xdg-open` on Linux. Windows isn't handled, so bot jumps may do nothing there.
+
+The [known limitations](#known-limitations) apply on every system. Reports and PRs from Windows and Linux are welcome.
 
 ## Settings
 
@@ -212,9 +229,10 @@ Island for Orca 是 [Orca](https://orca.dev) 的 macOS 插件。它在屏幕顶�
 ### 安装
 
 需要：
-- macOS 14 或更新
 - Orca 1.4.259 或更新
-- Xcode 命令行工具（`xcode-select --install`）。没有时会使用只有药丸的简化版。
+- 显示小岛需要 macOS 14 或更新，以及 Xcode 命令行工具（`xcode-select --install`）。没有命令行工具时会使用只有药丸的简化版。
+
+Windows 和 Linux 上也能安装，但功能较少，见[平台支持](#平台支持)。
 
 在 Orca 插件目录里安装，或在命令行运行：
 
@@ -225,6 +243,22 @@ orca plugin install Leo-Ni88/orca-island
 Orca 会列出插件需要的权限（见 [SECURITY.md](SECURITY.md)），由你确认后才会启用。
 
 首次启动时，插件会在你的 Mac 上编译它的 Swift 小程序，约 10 秒，进度显示在 Orca 状态栏。编译结果缓存在 `~/Library/Caches/orca-island/`，不会下载任何预编译程序。
+
+### 平台支持
+
+**macOS 14+：全部功能。** 小岛（从刘海展开，或顶部的小药丸）、列表、预览、直接回答和快捷键。编译小程序需要 Xcode 命令行工具；没有时只有药丸（JXA）。
+
+**Windows 和 Linux：没有小岛。** 插件能安装和运行，但只有：
+- Orca 状态栏里的摘要；
+- 「需要你」和失败时的系统通知（提醒强度不是「安静」时，完成也会通知）；
+- 状态栏里的开关按钮。
+
+Windows 和 Linux 尚未测试。从代码看：
+- 默认的 `orca` 命令行路径是 macOS 的。其他系统上，如果 Orca 设置了 `ORCA_CLI_COMMAND` 就用它；否则请在[设置](#设置)里填写「命令行工具 orca 的路径」，不然 bot 事项和其他 Orca 事件不会显示。
+- 只有 Orca 在 macOS 上的数据目录（或设置了 `ORCA_USER_DATA_PATH` 时）能立刻发现新的 bot 事项；其他系统上要等每 60 秒一次的刷新。
+- 跳到 bot 时，Linux 上用 `xdg-open` 打开 `orca://` 链接；Windows 还没有处理，跳转可能没有反应。
+
+[功能](#功能)里列出的「已知限制」在所有系统上都存在。欢迎在 Windows 和 Linux 上试用后反馈或提交 PR。
 
 ### 设置
 
